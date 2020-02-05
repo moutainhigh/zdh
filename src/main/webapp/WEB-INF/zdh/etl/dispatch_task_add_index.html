@@ -45,7 +45,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label">调度说明</label>
                             <div class="col-sm-10">
-                                <input id="dispatch_context" name="dispatch_context" type="text"
+                                <input id="job_context" name="job_context" type="text"
                                        placeholder="调度说明" class="form-control" aria-required="true"> </span>
                             </div>
                         </div>
@@ -216,8 +216,8 @@
                         console.info("success")
                        // layer.alert(JSON.stringify(data[0]))
                         //获取调度任务说明
-                        var dispatch_context=data[0].dispatch_context
-                        $("#dispatch_context").val(dispatch_context);
+                        var job_context=data[0].job_context
+                        $("#job_context").val(job_context);
 
                         var etl_task_id=data[0].etl_task_id
                         //初始化输入数据源select 组件

@@ -61,12 +61,12 @@
           });
       }
 
-      function executeMs(id) {
+      function executeMs(job_id) {
           $('#execute').attr({disabled: "disabled"});
           layer.msg('开始执行');
           $.ajax({
               url : "dispatch_task_execute",
-              data : "id=" + id,
+              data : "job_id=" + job_id,
               type : "post",
               dataType : "json",
               success : function(data) {
@@ -87,7 +87,7 @@
       window.operateEvents = {
           'click #edit': function (e, value, row, index) {
 
-              $("#id").val(row.id)
+              $("#id").val(row.job_id)
               top.layer.open({
                   type: 2,
                   title: '调度任务配置',
@@ -98,7 +98,7 @@
                   shade: 0.1,
                   area : ['45%', '60%'],
                   //area: ['450px', '500px'],
-                  content: "dispatch_task_add_index?id="+row.id, //iframe的url
+                  content: "dispatch_task_add_index?id="+row.job_id, //iframe的url
                   end:function () {
                       $('#exampleTableEvents').bootstrapTable('refresh', {
                           url : 'dispatch_task_list'
@@ -109,14 +109,14 @@
           },
           'click #del': function (e, value, row, index) {
               var ids = new Array();// 声明一个数组
-              ids.push(row.id)
+              ids.push(row.job_id)
               deleteMs(ids)
           },
           'click #execute': function (e, value, row, index) {
-              executeMs(row.id)
+              executeMs(row.job_id)
           },
           'click #log_txt': function (e, value, row, index) {
-              openTabPage("log_txt.html?id="+row.id,"日志")
+              openTabPage("log_txt.html?id="+row.job_id,"日志")
           }
       };
 
@@ -161,11 +161,11 @@
             field:'state',
             sortable:true
         }, {
-            field: 'id',
-            title: 'ID',
+            field: 'job_id',
+            title: 'JOB_ID',
             sortable:false
         }, {
-            field: 'dispatch_context',
+            field: 'job_context',
             title: '调度说明',
             sortable:false
         }, {

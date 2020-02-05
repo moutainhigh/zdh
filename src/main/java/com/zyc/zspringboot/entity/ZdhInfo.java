@@ -86,7 +86,7 @@ class Dsi_Info{
 
 public class ZdhInfo {
 
-    private DispatchTaskInfo dispatchTaskInfo;
+    private QuartzJobInfo quartzJobInfo;
 
     //输入数据源
     private Dsi_Info dsi_Input;
@@ -98,12 +98,12 @@ public class ZdhInfo {
     //etl 任务
     private EtlTaskInfo etlTaskInfo;
 
-    public DispatchTaskInfo getDispatchTaskInfo() {
-        return dispatchTaskInfo;
+    public QuartzJobInfo getQuartzJobInfo() {
+        return quartzJobInfo;
     }
 
-    public void setDispatchTaskInfo(DispatchTaskInfo dispatchTaskInfo) {
-        this.dispatchTaskInfo = dispatchTaskInfo;
+    public void setQuartzJobInfo(QuartzJobInfo quartzJobInfo) {
+        this.quartzJobInfo = quartzJobInfo;
     }
 
     public Dsi_Info getDsi_Input() {
@@ -130,12 +130,12 @@ public class ZdhInfo {
         this.etlTaskInfo = etlTaskInfo;
     }
 
-    public void setZdhInfo(DataSourcesInfo dataSourcesInfoInput , EtlTaskInfo etlTaskInfo, DataSourcesInfo dataSourcesInfoOutput,DispatchTaskInfo dispatchTaskInfo){
+    public void setZdhInfo(DataSourcesInfo dataSourcesInfoInput , EtlTaskInfo etlTaskInfo, DataSourcesInfo dataSourcesInfoOutput,QuartzJobInfo quartzJobInfo){
 
        // this.dataSourcesInfoInput=dataSourcesInfoInput;
 
        // this.dataSourcesInfoOutput=dataSourcesInfoOutput;
-        this.dispatchTaskInfo=dispatchTaskInfo;
+        this.quartzJobInfo=quartzJobInfo;
 
         this.etlTaskInfo=etlTaskInfo;
         Dsi_Info dsi_Input=new Dsi_Info();

@@ -1,8 +1,11 @@
 package com.zyc.zspringboot.job;
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.zyc.zspringboot.dao.QuartzJobMapper;
+import com.zyc.zspringboot.entity.QuartzJobInfo;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -35,14 +38,14 @@ public class MyJobBean extends QuartzJobBean implements Serializable {
 	public static final String TASK_ID = "task_id";
 	
 	@Autowired
-	private TaskInfoMapper taskInfoMapper;
+	private QuartzJobMapper quartzJobMapper;
 
-	public TaskInfoMapper getTaskInfoMapper() {
-		return taskInfoMapper;
+	public QuartzJobMapper getQuartzJobMapper() {
+		return quartzJobMapper;
 	}
 
-	public void setTaskInfoMapper(TaskInfoMapper taskInfoMapper) {
-		this.taskInfoMapper = taskInfoMapper;
+	public void setQuartzJobMapper(QuartzJobMapper quartzJobMapper) {
+		this.quartzJobMapper = quartzJobMapper;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -61,29 +64,39 @@ public class MyJobBean extends QuartzJobBean implements Serializable {
 			}
 			// 记录当前时间更新任务最后执行时间
 			Date currentTime = new Date();
-			// 根据taskId获取TaskInfoTb
-//			TaskInfoMapper dmTaskInfoTbMapper = (TaskInfoMapper) SpringContext
-//					.getBean("taskInfoMapper");
-			TaskInfoMapper dmTaskInfoTbMapper = taskInfoMapper;
-			TaskInfo dmTaskInfoTb = new TaskInfo();
-			dmTaskInfoTb = dmTaskInfoTbMapper.selectByPrimaryKey(taskId);
-			Date lastTime = dmTaskInfoTb.getLastUpdateTime();
-			dmTaskInfoTb.setLastUpdateTime(currentTime);
-			// 任务执行次数计算
-			String cou = dmTaskInfoTb.getTaskCount();
-			Long count = 0L;
-			if (cou == null || cou.equals("")
-					|| Long.valueOf(cou) == Long.MAX_VALUE) {
-				count = 1L;
-			} else {
-				count = Long.valueOf(cou) + 1;
+
+			QuartzJobMapper quartzJobMapper2 = this.quartzJobMapper;
+			QuartzJobInfo quartzJobInfo = new QuartzJobInfo();
+			quartzJobInfo = quartzJobMapper2.selectByPrimaryKey(taskId);
+
+			if(quartzJobInfo.getJob_type().equals("SHELL")){
+				ShellJob.run(quartzJobInfo);
 			}
-			dmTaskInfoTb.setTaskCount(count.toString());
-			// 更新任务到数据库
-			dmTaskInfoTb.setTaskStatus("runing");
-			int result = dmTaskInfoTbMapper.updateByPrimaryKey(dmTaskInfoTb);
+
+
+
+//			Date lastTime = dmTaskInfoTb.getLastUpdateTime();
+//			dmTaskInfoTb.setLastUpdateTime(currentTime);
+//			// 任务执行次数计算
+//			String cou = dmTaskInfoTb.getTaskCount();
+//			Long count = 0L;
+//			if (cou == null || cou.equals("")
+//					|| Long.valueOf(cou) == Long.MAX_VALUE) {
+//				count = 1L;
+//			} else {
+//				count = Long.valueOf(cou) + 1;
+//			}
+//			dmTaskInfoTb.setTaskCount(count.toString());
+//			// 更新任务到数据库
+//			dmTaskInfoTb.setTaskStatus("runing");
+//			int result = dmTaskInfoTbMapper.updateByPrimaryKey(dmTaskInfoTb);
 			//Thread.sleep(1000);
-			logger.info("{}", result);
+//			logger.info("{}", result);
+
+			//获取任务信息 判断 执行那个
+
+
+
 			// 获取规则服务
 			// DimCheckedTablesInfoTbService ruleInfoService =
 			// (DimCheckedTablesInfoTbService) SpringContextService

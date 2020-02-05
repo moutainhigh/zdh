@@ -57,6 +57,33 @@ PRIMARY KEY (id)
 );
 
 
+drop table if EXISTS quartz_job_info;
+create table quartz_job_info(
+job_id VARCHAR(100) ,
+job_context VARCHAR(100) ,
+job_type VARCHAR(100),
+start_time DATE ,
+end_time date,
+job_model int,
+plan_count int,
+command VARCHAR(100),
+params VARCHAR(100),
+last_status VARCHAR(100),
+last_time date,
+next_time date,
+expr VARCHAR(100),
+status VARCHAR(100),
+ip VARCHAR(100),
+user VARCHAR(100),
+password VARCHAR(100),
+etl_task_id VARCHAR(100),
+etl_context varchar(100),
+owner varchar(100),
+PRIMARY key(job_id)
+);
+
+
+
 
 
 

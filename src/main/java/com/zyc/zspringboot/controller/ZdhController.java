@@ -3,7 +3,9 @@ package com.zyc.zspringboot.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.zyc.zspringboot.dao.QuartzJobMapper;
 import com.zyc.zspringboot.entity.*;
+import com.zyc.zspringboot.job.SnowflakeIdWorker;
 import com.zyc.zspringboot.service.DataSourcesService;
 import com.zyc.zspringboot.service.DispatchTaskService;
 import com.zyc.zspringboot.service.EtlTaskService;
@@ -38,6 +40,8 @@ public class ZdhController {
     DispatchTaskService dispatchTaskService;
     @Autowired
     ZdhLogsService zdhLogsService;
+    @Autowired
+    QuartzJobMapper quartzJobMapper;
 
     @RequestMapping("/data_sources_index")
     public String data_sources_index() {
@@ -281,13 +285,15 @@ public class ZdhController {
     @RequestMapping(value = "/dispatch_task_list", produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String dispatch_task_list(String[] ids) {
-        List<DispatchTaskInfo> list=new ArrayList<>();
-        DispatchTaskInfo dispatchTaskInfo=new DispatchTaskInfo();
-        dispatchTaskInfo.setOwner(getUser().getId());
+        List<QuartzJobInfo> list=new ArrayList<>();
+        QuartzJobInfo quartzJobInfo=new QuartzJobInfo();
+        quartzJobInfo.setOwner(getUser().getId());
         if(ids==null)
-            list= dispatchTaskService.select(dispatchTaskInfo);
-        else
-            list.add(dispatchTaskService.selectById(ids[0]));
+            list= quartzJobMapper.select(quartzJobInfo);
+        else{
+            quartzJobInfo.setJob_id(ids[0]);
+            list.add(quartzJobMapper.selectByPrimaryKey(ids[0]));
+        }
 
         return JSON.toJSONString(list);
     }
@@ -305,10 +311,11 @@ public class ZdhController {
 
     @RequestMapping("/dispatch_task_add")
     @ResponseBody
-    public String dispatch_task_add(DispatchTaskInfo dispatchTaskInfo) {
-        dispatchTaskInfo.setOwner(getUser().getId());
-        debugInfo(dispatchTaskInfo);
-        dispatchTaskService.insert(dispatchTaskInfo);
+    public String dispatch_task_add(QuartzJobInfo quartzJobInfo) {
+        quartzJobInfo.setOwner(getUser().getId());
+        quartzJobInfo.setJob_id(SnowflakeIdWorker.getInstance().nextId()+"");
+        debugInfo(quartzJobInfo);
+        quartzJobMapper.insert(quartzJobInfo);
 
         JSONObject json = new JSONObject();
 
@@ -320,7 +327,10 @@ public class ZdhController {
     @RequestMapping("/dispatch_task_delete")
     @ResponseBody
     public String dispatch_task_delete(Long[] ids) {
-        dispatchTaskService.deleteBatchById(ids);
+
+        for(Long id : ids) {
+            quartzJobMapper.deleteByPrimaryKey(id);
+        }
 
         JSONObject json = new JSONObject();
         json.put("success", "200");
@@ -329,10 +339,10 @@ public class ZdhController {
 
     @RequestMapping("/dispatch_task_update")
     @ResponseBody
-    public String dispatch_task_update(DispatchTaskInfo dispatchTaskInfo) {
+    public String dispatch_task_update(QuartzJobInfo quartzJobInfo) {
 
-        dispatchTaskInfo.setOwner(getUser().getId());
-        dispatchTaskService.update(dispatchTaskInfo);
+        quartzJobInfo.setOwner(getUser().getId());
+        quartzJobMapper.updateByPrimaryKey(quartzJobInfo);
 
         JSONObject json = new JSONObject();
 
@@ -342,15 +352,15 @@ public class ZdhController {
 
     @RequestMapping("/dispatch_task_execute")
     @ResponseBody
-    public String dispatch_task_execute(DispatchTaskInfo dispatchTaskInfo) {
+    public String dispatch_task_execute(QuartzJobInfo quartzJobInfo) {
 
-        debugInfo(dispatchTaskInfo);
+        debugInfo(quartzJobInfo);
 
        // dispatchTaskService.update(dispatchTaskInfo);
         String url="http://127.0.0.1:60001/api/v1/zdh";
 
         //获取调度任务信息
-        DispatchTaskInfo dti=dispatchTaskService.selectById(dispatchTaskInfo.getId());
+        QuartzJobInfo dti=quartzJobMapper.selectByPrimaryKey(quartzJobInfo.getJob_id());
 
         String etl_task_id=dti.getEtl_task_id();
         //获取etl 任务信息

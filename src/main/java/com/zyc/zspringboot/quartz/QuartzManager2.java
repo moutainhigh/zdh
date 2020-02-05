@@ -1,71 +1,51 @@
 package com.zyc.zspringboot.quartz;
 
-import org.quartz.CronScheduleBuilder;
-import org.quartz.CronTrigger;
-import org.quartz.JobBuilder;
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.SimpleScheduleBuilder;
-import org.quartz.SimpleTrigger;
-import org.quartz.Trigger;
-import org.quartz.TriggerBuilder;
-import org.quartz.TriggerKey;
+import com.zyc.zspringboot.dao.QuartzJobMapper;
+import com.zyc.zspringboot.dao.TaskInfoMapper;
+import com.zyc.zspringboot.entity.QuartzJobInfo;
+import com.zyc.zspringboot.entity.TaskInfo;
+import com.zyc.zspringboot.job.MyJobBean;
+import com.zyc.zspringboot.job.SnowflakeIdWorker;
+import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.stereotype.Service;
 
-import com.zyc.zspringboot.dao.TaskInfoMapper;
-import com.zyc.zspringboot.entity.TaskInfo;
-import com.zyc.zspringboot.job.MyJobBean;
-import com.zyc.zspringboot.job.SnowflakeIdWorker;
+import java.util.Date;
 
-@Service("quartzManager")
-public class QuartzManager {
+@Service("quartzManager2")
+public class QuartzManager2 {
 
-	private static Logger logger = LoggerFactory.getLogger(QuartzManager.class);
+	private static Logger logger = LoggerFactory.getLogger(QuartzManager2.class);
 	@Autowired
 	private SchedulerFactoryBean schedulerFactoryBean;
 	
 	@Autowired
-	private TaskInfoMapper taskInfoDao;
+	private QuartzJobMapper quartzJobMapper;
 
 	/**
 	 * 根据任务名，对应的表名，表达式创建任务
-	 * 
-	 * @param taskName
-	 * @param tableName
-	 * @param cron
 	 * @return
 	 */
-	public TaskInfo createTaskInfo(String taskName, String tableName,
-			String cron, int plancount,String desc) {
-		TaskInfo taskInfo = new TaskInfo();
-		String taskId = String
-				.valueOf(SnowflakeIdWorker.getInstance().nextId());
-		taskInfo.setTaskId(taskId);
-		String beanName = taskName;
-		String mapperName = beanName.substring(0, 1).toLowerCase()
-				+ beanName.substring(1, beanName.length()) + "Mapper";
-		if (taskName == null || taskName.trim().equals("")) {
-			taskInfo.setTaskName(beanName + "_" + taskId);
-		}else{
-			taskInfo.setTaskName(taskName+ "_" + taskId);
-		}
-		taskInfo.setTaskGroup(mapperName);
-		taskInfo.setTaskTrigger("selectByExample");
-		taskInfo.setTaskExpression(cron);
-		taskInfo.setTaskTablename(tableName);
-		taskInfo.setTaskBeanmapper(mapperName);
-		taskInfo.setTaskDesc(desc);
-		taskInfo.setTaskParam("update_time");
-		taskInfo.setTaskPlanCount(plancount);
-		taskInfo.setTaskStatus("create");
-		return taskInfo;
+	public QuartzJobInfo createQuartzJobInfo(String job_type, int job_model,Date start_date,Date end_date,String job_context,
+			String expr, int plancount,String command,String etl_task_id) {
+		QuartzJobInfo quartzJobInfo = new QuartzJobInfo();
+
+		quartzJobInfo.setJob_id(SnowflakeIdWorker.getInstance().nextId()+"");
+        quartzJobInfo.setJob_type(job_type);
+        quartzJobInfo.setJob_model(job_model);
+        quartzJobInfo.setStart_time(start_date);
+        quartzJobInfo.setEnd_time(end_date);
+        quartzJobInfo.setJob_context(job_context);
+        quartzJobInfo.setCommand(command);
+        quartzJobInfo.setExpr(expr);
+        quartzJobInfo.setPlan_count(plancount);
+		quartzJobInfo.setStatus("create");
+        quartzJobInfo.setEtl_task_id(etl_task_id);
+
+		return quartzJobInfo;
 	}
 
 	/**
@@ -73,60 +53,58 @@ public class QuartzManager {
 	 * @param taskId
 	 * @return TaskInfoTb
 	 */
-	public TaskInfo selectTaskInfoTb(String taskId){
-		return taskInfoDao.selectByPrimaryKey(taskId);
+	public QuartzJobInfo selectQuartzJobInfo(String taskId){
+		return quartzJobMapper.selectByPrimaryKey(taskId);
 	}
 	/**
 	 * 将定时任务插入到任务信息表中
-	 * @param taskInfo
+	 * @param quartzJobInfo
 	 */
 	//@Transactional(value="platformTransactionManager")
-	public void addTaskInfo(TaskInfo taskInfo){
-		taskInfoDao.insert(taskInfo);
+	public void addQuartzJobInfo(QuartzJobInfo quartzJobInfo){
+		quartzJobMapper.insert(quartzJobInfo);
 	}
 	
 	/**
 	 * 执行定时任务
 	 * 
-	 * @param taskInfo
+	 * @param quartzJobInfo
 	 */
-	public void addTaskToQuartz(TaskInfo taskInfo) {
+	public void addTaskToQuartz(QuartzJobInfo quartzJobInfo) {
 		try {
-			if(schedulerFactoryBean.getScheduler().getTrigger(new TriggerKey(taskInfo.getTaskName(), taskInfo.getTaskGroup()))!=null){
+			//根据调度id 和etl任务id 确定唯一的triggerkey
+			if(schedulerFactoryBean.getScheduler().getTrigger(new TriggerKey(quartzJobInfo.getJob_id(), quartzJobInfo.getEtl_task_id()))!=null){
 				logger.info("已经存在同名的triggerkey,请重新创建");
 				throw new Exception("已经存在同名的triggerkey,请重新创建");
 			}
 			JobDetail jobDetail = JobBuilder
 					.newJob(MyJobBean.class)
-					.withDescription(taskInfo.getTaskDesc())
-					.withIdentity(taskInfo.getTaskName(),
-							taskInfo.getTaskGroup()).build();
+					.withDescription(quartzJobInfo.getJob_context())
+					.withIdentity(quartzJobInfo.getJob_id(), quartzJobInfo.getEtl_task_id()).build();
 			Trigger trigger = null;
 			// CronScheduleBuilder.cronSchedule(taskInfo.getTaskExpression())
-			String expression = taskInfo.getTaskExpression();
+			String expression = quartzJobInfo.getExpr();
 			if (expression.contains("s") || expression.contains("m")
 					|| expression.contains("h")) {
 				SimpleScheduleBuilder simpleScheduleBuilder = getSimpleScheduleBuilder(
-						expression, taskInfo.getTaskPlanCount());
+						expression, quartzJobInfo.getPlan_count());
 				trigger = TriggerBuilder
 						.newTrigger()
-						.withIdentity(taskInfo.getTaskName(),
-								taskInfo.getTaskGroup()).startNow()
+						.withIdentity(quartzJobInfo.getJob_id(), quartzJobInfo.getEtl_task_id()).startNow()
 						.withSchedule(simpleScheduleBuilder).build();
 			} else {
 				CronScheduleBuilder cronScheduleBuilder = getCronScheduleBuilder(expression);
 				trigger = TriggerBuilder
 						.newTrigger()
-						.withIdentity(taskInfo.getTaskName(),
-								taskInfo.getTaskGroup()).startNow()
+						.withIdentity(quartzJobInfo.getJob_id(), quartzJobInfo.getEtl_task_id()).startNow()
 						.withSchedule(cronScheduleBuilder).build();
 			}
 			logger.debug("任务的trigger创建完成triggerkey is {}", trigger.getKey()
 					.toString());
 			JobDataMap jobDataMap = trigger.getJobDataMap();
-			jobDataMap.put(MyJobBean.TASK_ID, taskInfo.getTaskId());
-			taskInfo.setTaskStatus("start");
-			taskInfoDao.updateByPrimaryKey(taskInfo);
+			jobDataMap.put(MyJobBean.TASK_ID, quartzJobInfo.getJob_id());
+			quartzJobInfo.setStatus("start");
+			quartzJobMapper.updateByPrimaryKey(quartzJobInfo);
 			schedulerFactoryBean.getScheduler().scheduleJob(jobDetail, trigger);
 			if (!schedulerFactoryBean.getScheduler().isStarted()) {
 				schedulerFactoryBean.getScheduler().start();
@@ -147,25 +125,24 @@ public class QuartzManager {
 	/**
 	 * 重启任务<br>
 	 * 重启后的任务和重启前的任务的trigger保持一致
-	 * @param taskInfo
+	 * @param quartzJobInfo
 	 * @return
 	 */
-	public TaskInfo reStartTask(TaskInfo taskInfo) {
+	public QuartzJobInfo reStartTask(QuartzJobInfo quartzJobInfo) {
 		try {
 			Trigger trigger = null;
-			String expression = taskInfo.getTaskExpression();
+			String expression = quartzJobInfo.getExpr();
 			if (expression.contains("s") || expression.contains("m")
 					|| expression.contains("h")) {
 				trigger = (SimpleTrigger) schedulerFactoryBean.getScheduler().getTrigger(new TriggerKey(
-						taskInfo.getTaskName(), taskInfo.getTaskGroup()));
+						quartzJobInfo.getJob_id(), quartzJobInfo.getEtl_task_id()));
 				trigger = ((SimpleTrigger) trigger)
 						.getTriggerBuilder()
 						.withIdentity(
-								new TriggerKey(taskInfo.getTaskName(),
-										taskInfo.getTaskGroup()))
+								new TriggerKey(quartzJobInfo.getJob_id(), quartzJobInfo.getEtl_task_id()))
 						.withSchedule(
 								getSimpleScheduleBuilder(expression,
-										taskInfo.getTaskPlanCount())).build();
+										quartzJobInfo.getPlan_count())).build();
 
 				/*
 				 * trigger=TriggerBuilder.newTrigger().startNow() .withIdentity(
@@ -179,16 +156,15 @@ public class QuartzManager {
 				schedulerFactoryBean.getScheduler().rescheduleJob(trigger.getKey(), trigger);
 			} else {
 				trigger = (CronTrigger) schedulerFactoryBean.getScheduler().getTrigger(new TriggerKey(
-						taskInfo.getTaskName(), taskInfo.getTaskGroup()));
+						quartzJobInfo.getJob_id(), quartzJobInfo.getEtl_task_id()));
 				trigger = ((CronTrigger) trigger)
 						.getTriggerBuilder()
 						.withIdentity(
-								new TriggerKey(taskInfo.getTaskName(),
-										taskInfo.getTaskGroup())).startNow()
+								new TriggerKey(quartzJobInfo.getJob_id(), quartzJobInfo.getEtl_task_id())).startNow()
 						.withSchedule(getCronScheduleBuilder(expression))
 						.build();
 				trigger.getJobDataMap().put(MyJobBean.TASK_ID,
-						taskInfo.getTaskId());
+						quartzJobInfo.getJob_id());
 				// 按新的trigger重新设置job执行
 				schedulerFactoryBean.getScheduler().rescheduleJob(trigger.getKey(), trigger);
 			}
@@ -198,58 +174,56 @@ public class QuartzManager {
 			e.printStackTrace();
 		}
 		// 下方可以做一些更新数据库中任务的操作
-		taskInfo.setTaskStatus("runing");
-		taskInfoDao.updateByPrimaryKey(taskInfo);
-		return taskInfo;
+		quartzJobInfo.setStatus("runing");
+		quartzJobMapper.updateByPrimaryKey(quartzJobInfo);
+		return quartzJobInfo;
 	}
 	/**
 	 * 重启任务<br>
 	 * 重启后的任务和重启前的任务的trigger不是同一种,比如之前是simpletrigger类型现在是crontrigger类型
-	 * @param taskInfo
+	 * @param quartzJobInfo
 	 * @return
 	 */
-	public void reStartTask2(TaskInfo taskInfo){
-		deleteTask(taskInfo);
-		addTaskToQuartz(taskInfo);
+	public void reStartTask2(QuartzJobInfo quartzJobInfo){
+		deleteTask(quartzJobInfo);
+		addTaskToQuartz(quartzJobInfo);
 	}
 	
 	/**
 	 * 删除任务
 	 * 
-	 * @param taskInfo
+	 * @param quartzJobInfo
 	 * @return
 	 */
-	public TaskInfo deleteTask(TaskInfo taskInfo) {
+	public QuartzJobInfo deleteTask(QuartzJobInfo quartzJobInfo) {
 		try {
 			Scheduler scheduler = schedulerFactoryBean.getScheduler();
-			JobKey jobKey = new JobKey(taskInfo.getTaskName(),
-					taskInfo.getTaskGroup());
+			JobKey jobKey = new JobKey(quartzJobInfo.getJob_id(), quartzJobInfo.getEtl_task_id());
 			scheduler.pauseJob(jobKey);
 			scheduler.deleteJob(jobKey);
 			// 在自己定义的任务表中删除任务,状态删除
-			taskInfo.setTaskStatus("remove");
-			taskInfoDao.updateByPrimaryKey(taskInfo);
+			quartzJobInfo.setStatus("finish");
+			quartzJobMapper.updateByPrimaryKey(quartzJobInfo);
 		} catch (SchedulerException e) {
 
 			e.printStackTrace();
 		}
-		return taskInfo;
+		return quartzJobInfo;
 	}
 
 	/**
 	 * 暂停定时任务
 	 * 
-	 * @param task
+	 * @param quartzJobInfo
 	 */
-	public void pauseTask(TaskInfo taskInfo) {
+	public void pauseTask(QuartzJobInfo quartzJobInfo) {
 		try {
 			// Scheduler scheduler = schedulerFactoryBean.getScheduler();
-			JobKey jobKey = new JobKey(taskInfo.getTaskName(),
-					taskInfo.getTaskGroup());
+			JobKey jobKey = new JobKey(quartzJobInfo.getJob_id(), quartzJobInfo.getEtl_task_id());
 			schedulerFactoryBean.getScheduler().pauseJob(jobKey);
 			// 更新定时任务状态
-			taskInfo.setTaskStatus("pause");
-			taskInfoDao.updateByPrimaryKey(taskInfo);
+			quartzJobInfo.setStatus("pause");
+			quartzJobMapper.updateByPrimaryKey(quartzJobInfo);
 		} catch (SchedulerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -259,12 +233,11 @@ public class QuartzManager {
 	/**
 	 * 恢复定时任务
 	 * 
-	 * @param task
+	 * @param quartzJobInfo
 	 */
-	public void resumeTask(TaskInfo taskInfo) {
+	public void resumeTask(QuartzJobInfo quartzJobInfo) {
 		try {
-			JobKey jobKey = new JobKey(taskInfo.getTaskName(),
-					taskInfo.getTaskGroup());
+			JobKey jobKey = new JobKey(quartzJobInfo.getJob_id(), quartzJobInfo.getEtl_task_id());
 			schedulerFactoryBean.getScheduler().resumeJob(jobKey);
 		} catch (SchedulerException e) {
 			// TODO Auto-generated catch block
