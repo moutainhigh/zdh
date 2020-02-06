@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.zyc.zspringboot.dao.QuartzJobMapper;
 import com.zyc.zspringboot.entity.*;
 import com.zyc.zspringboot.job.SnowflakeIdWorker;
+import com.zyc.zspringboot.quartz.QuartzManager2;
 import com.zyc.zspringboot.service.DataSourcesService;
 import com.zyc.zspringboot.service.DispatchTaskService;
 import com.zyc.zspringboot.service.EtlTaskService;
@@ -42,6 +43,8 @@ public class ZdhController {
     ZdhLogsService zdhLogsService;
     @Autowired
     QuartzJobMapper quartzJobMapper;
+    @Autowired
+    QuartzManager2 quartzManager2;
 
     @RequestMapping("/data_sources_index")
     public String data_sources_index() {
@@ -53,7 +56,7 @@ public class ZdhController {
     @ResponseBody
     public String data_sources_list(String[] ids) {
 
-        DataSourcesInfo dataSourcesInfo=new DataSourcesInfo();
+        DataSourcesInfo dataSourcesInfo = new DataSourcesInfo();
         dataSourcesInfo.setOwner(getUser().getId());
         List<DataSourcesInfo> list = dataSourcesServiceImpl.select(dataSourcesInfo);
 
@@ -71,7 +74,7 @@ public class ZdhController {
     }
 
     @RequestMapping("/data_sources_add")
-    public String data_sources_add(HttpServletRequest request, HttpServletResponse response,Long id) {
+    public String data_sources_add(HttpServletRequest request, HttpServletResponse response, Long id) {
 
         return "etl/data_sources_add";
     }
@@ -120,11 +123,11 @@ public class ZdhController {
     @RequestMapping(value = "/etl_task_list", produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String etl_task_list(String[] ids) {
-        List<EtlTaskInfo> list=new ArrayList<>();
-        EtlTaskInfo etlTaskInfo=new EtlTaskInfo();
+        List<EtlTaskInfo> list = new ArrayList<>();
+        EtlTaskInfo etlTaskInfo = new EtlTaskInfo();
         etlTaskInfo.setOwner(getUser().getId());
-        if(ids==null)
-            list= etlTaskService.select(etlTaskInfo);
+        if (ids == null)
+            list = etlTaskService.select(etlTaskInfo);
         else
             list.add(etlTaskService.selectById(ids[0]));
 
@@ -142,10 +145,10 @@ public class ZdhController {
     }
 
     @RequestMapping("/etl_task_add_index")
-    public String etl_task_add(HttpServletRequest request, HttpServletResponse response,Long id,String edit) {
+    public String etl_task_add(HttpServletRequest request, HttpServletResponse response, Long id, String edit) {
 
         System.out.println(edit);
-        request.setAttribute("edit",edit);
+        request.setAttribute("edit", edit);
         return "etl/etl_task_add_index";
     }
 
@@ -157,7 +160,7 @@ public class ZdhController {
         debugInfo(etlTaskInfo);
 
         etlTaskInfo.getColumn_data_list().forEach(column_data -> {
-            System.out.println(column_data.getColumn_expr()+"="+column_data.getColumn_alias());
+            System.out.println(column_data.getColumn_expr() + "=" + column_data.getColumn_alias());
         });
 
         etlTaskService.insert(etlTaskInfo);
@@ -187,32 +190,32 @@ public class ZdhController {
     @ResponseBody
     public String etl_task_tables(String id) {
 
-        DataSourcesInfo dataSourcesInfo=dataSourcesServiceImpl.selectById(id);
+        DataSourcesInfo dataSourcesInfo = dataSourcesServiceImpl.selectById(id);
 
-        String jsonArrayStr=tables(dataSourcesInfo);
+        String jsonArrayStr = tables(dataSourcesInfo);
 
         System.out.println(jsonArrayStr);
         return jsonArrayStr;
     }
 
-    private String tables(DataSourcesInfo dataSourcesInfo){
+    private String tables(DataSourcesInfo dataSourcesInfo) {
 
-        String url=dataSourcesInfo.getUrl();
+        String url = dataSourcesInfo.getUrl();
 
 
-        if(url.toLowerCase().contains("jdbc:oracle")){
+        if (url.toLowerCase().contains("jdbc:oracle")) {
 
-            List<String> list=new DBUtil().R(dataSourcesInfo.getDriver(),dataSourcesInfo.getUrl(),dataSourcesInfo.getUsername(),dataSourcesInfo.getPassword(),
+            List<String> list = new DBUtil().R(dataSourcesInfo.getDriver(), dataSourcesInfo.getUrl(), dataSourcesInfo.getUsername(), dataSourcesInfo.getPassword(),
                     "SELECT TABLE_NAME FROM USER_TABLES");
             return JSON.toJSONString(list);
-        }else if(url.toLowerCase().contains("jdbc:mysql") || url.toLowerCase().contains("jdbc:mariadb")){
-            List<String> list= new DBUtil().R(dataSourcesInfo.getDriver(),dataSourcesInfo.getUrl(),dataSourcesInfo.getUsername(),dataSourcesInfo.getPassword(),
-                    "SELECT table_name FROM information_schema.TABLES where table_schema=?",tableSchema(dataSourcesInfo.getUrl()));
+        } else if (url.toLowerCase().contains("jdbc:mysql") || url.toLowerCase().contains("jdbc:mariadb")) {
+            List<String> list = new DBUtil().R(dataSourcesInfo.getDriver(), dataSourcesInfo.getUrl(), dataSourcesInfo.getUsername(), dataSourcesInfo.getPassword(),
+                    "SELECT table_name FROM information_schema.TABLES where table_schema=?", tableSchema(dataSourcesInfo.getUrl()));
 
             return JSON.toJSONString(list);
-        }else if(url.toLowerCase().contains("jdbc:postgresql")){
+        } else if (url.toLowerCase().contains("jdbc:postgresql")) {
 
-        }else if(url.toLowerCase().contains("jdbc:hive2")){
+        } else if (url.toLowerCase().contains("jdbc:hive2")) {
 
         }
 
@@ -221,48 +224,48 @@ public class ZdhController {
 
     /**
      * mysql 使用
+     *
      * @param url
      * @return
      */
-    private String tableSchema(String url){
+    private String tableSchema(String url) {
 
-        int index=url.split("\\?")[0].lastIndexOf("/");
-        return url.split("\\?")[0].substring(index+1);
+        int index = url.split("\\?")[0].lastIndexOf("/");
+        return url.split("\\?")[0].substring(index + 1);
 
     }
 
     @RequestMapping("/etl_task_schema")
     @ResponseBody
-    public String etl_task_schema(String id,String table_name) {
+    public String etl_task_schema(String id, String table_name) {
 
-        DataSourcesInfo dataSourcesInfo=dataSourcesServiceImpl.selectById(id);
+        DataSourcesInfo dataSourcesInfo = dataSourcesServiceImpl.selectById(id);
 
-        String jsonArrayStr=schema(dataSourcesInfo,table_name);
+        String jsonArrayStr = schema(dataSourcesInfo, table_name);
 
         System.out.println(jsonArrayStr);
         return jsonArrayStr;
     }
 
 
+    private String schema(DataSourcesInfo dataSourcesInfo, String table_name) {
 
-    private String schema(DataSourcesInfo dataSourcesInfo,String table_name){
-
-        String url=dataSourcesInfo.getUrl();
+        String url = dataSourcesInfo.getUrl();
 
 
-        if(url.toLowerCase().contains("jdbc:oracle")){
+        if (url.toLowerCase().contains("jdbc:oracle")) {
 
-           List<String> list=new DBUtil().R(dataSourcesInfo.getDriver(),dataSourcesInfo.getUrl(),dataSourcesInfo.getUsername(),dataSourcesInfo.getPassword(),
-                    "select COLUMN_NAME from user_tab_columns WHERE TABLE_NAME = ?",table_name);
+            List<String> list = new DBUtil().R(dataSourcesInfo.getDriver(), dataSourcesInfo.getUrl(), dataSourcesInfo.getUsername(), dataSourcesInfo.getPassword(),
+                    "select COLUMN_NAME from user_tab_columns WHERE TABLE_NAME = ?", table_name);
             return JSON.toJSONString(list);
-        }else if(url.toLowerCase().contains("jdbc:mysql") || url.toLowerCase().contains("jdbc:mariadb")){
-            List<String> list= new DBUtil().R(dataSourcesInfo.getDriver(),dataSourcesInfo.getUrl(),dataSourcesInfo.getUsername(),dataSourcesInfo.getPassword(),
-                    "select COLUMN_NAME from information_schema.COLUMNS where table_name = ?",table_name);
+        } else if (url.toLowerCase().contains("jdbc:mysql") || url.toLowerCase().contains("jdbc:mariadb")) {
+            List<String> list = new DBUtil().R(dataSourcesInfo.getDriver(), dataSourcesInfo.getUrl(), dataSourcesInfo.getUsername(), dataSourcesInfo.getPassword(),
+                    "select COLUMN_NAME from information_schema.COLUMNS where table_name = ?", table_name);
 
             return JSON.toJSONString(list);
-        }else if(url.toLowerCase().contains("jdbc:postgresql")){
+        } else if (url.toLowerCase().contains("jdbc:postgresql")) {
 
-        }else if(url.toLowerCase().contains("jdbc:hive2")){
+        } else if (url.toLowerCase().contains("jdbc:hive2")) {
 
         }
 
@@ -271,7 +274,7 @@ public class ZdhController {
 
 
     @RequestMapping("/dispatch_task_index")
-    public String dispatch_task_index(){
+    public String dispatch_task_index() {
 
         //配置调度环境
         //调度条件---定时,特定条件
@@ -285,21 +288,21 @@ public class ZdhController {
     @RequestMapping(value = "/dispatch_task_list", produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String dispatch_task_list(String[] ids) {
-        List<QuartzJobInfo> list=new ArrayList<>();
-        QuartzJobInfo quartzJobInfo=new QuartzJobInfo();
+        List<QuartzJobInfo> list = new ArrayList<>();
+        QuartzJobInfo quartzJobInfo = new QuartzJobInfo();
         quartzJobInfo.setOwner(getUser().getId());
-        if(ids==null)
-            list= quartzJobMapper.select(quartzJobInfo);
-        else{
+        if (ids == null)
+            list = quartzJobMapper.selectByOwner(quartzJobInfo.getOwner());
+        else {
             quartzJobInfo.setJob_id(ids[0]);
-            list.add(quartzJobMapper.selectByPrimaryKey(ids[0]));
+            list.add(quartzJobMapper.selectByPrimaryKey(quartzJobInfo));
         }
 
         return JSON.toJSONString(list);
     }
 
     @RequestMapping("/dispatch_task_add_index")
-    public String dispatch_task_add_index(){
+    public String dispatch_task_add_index() {
 
         //配置调度环境
         //调度条件---定时,特定条件
@@ -312,8 +315,18 @@ public class ZdhController {
     @RequestMapping("/dispatch_task_add")
     @ResponseBody
     public String dispatch_task_add(QuartzJobInfo quartzJobInfo) {
+        debugInfo(quartzJobInfo);
         quartzJobInfo.setOwner(getUser().getId());
-        quartzJobInfo.setJob_id(SnowflakeIdWorker.getInstance().nextId()+"");
+        quartzJobInfo.setJob_id(SnowflakeIdWorker.getInstance().nextId() + "");
+        quartzJobInfo.setStatus("create");
+        String end_expr=quartzJobInfo.getExpr().toLowerCase();
+        if(end_expr.endsWith("s")||end_expr.endsWith("m")
+                ||end_expr.endsWith("h")){
+            //SimpleScheduleBuilder 表达式 必须指定一个次数,默认式
+            if(quartzJobInfo.getPlan_count().equals("")){
+                quartzJobInfo.setPlan_count("-1");
+            }
+        }
         debugInfo(quartzJobInfo);
         quartzJobMapper.insert(quartzJobInfo);
 
@@ -326,10 +339,11 @@ public class ZdhController {
 
     @RequestMapping("/dispatch_task_delete")
     @ResponseBody
-    public String dispatch_task_delete(Long[] ids) {
-
-        for(Long id : ids) {
-            quartzJobMapper.deleteByPrimaryKey(id);
+    public String dispatch_task_delete(String[] ids) {
+        QuartzJobInfo quartzJobInfo = new QuartzJobInfo();
+        for (String id : ids) {
+            quartzJobInfo.setJob_id(id);
+            quartzJobMapper.deleteByPrimaryKey(quartzJobInfo);
         }
 
         JSONObject json = new JSONObject();
@@ -341,7 +355,9 @@ public class ZdhController {
     @ResponseBody
     public String dispatch_task_update(QuartzJobInfo quartzJobInfo) {
 
+        debugInfo(quartzJobInfo);
         quartzJobInfo.setOwner(getUser().getId());
+        QuartzJobInfo qji=quartzJobMapper.selectByPrimaryKey(quartzJobInfo);
         quartzJobMapper.updateByPrimaryKey(quartzJobInfo);
 
         JSONObject json = new JSONObject();
@@ -356,50 +372,59 @@ public class ZdhController {
 
         debugInfo(quartzJobInfo);
 
-       // dispatchTaskService.update(dispatchTaskInfo);
-        String url="http://127.0.0.1:60001/api/v1/zdh";
+        String url = "http://127.0.0.1:60001/api/v1/zdh";
 
-        //获取调度任务信息
-        QuartzJobInfo dti=quartzJobMapper.selectByPrimaryKey(quartzJobInfo.getJob_id());
+        ZdhInfo zdhInfo = create_zhdInfo(quartzJobInfo);
 
-        String etl_task_id=dti.getEtl_task_id();
-        //获取etl 任务信息
-        EtlTaskInfo etlTaskInfo=etlTaskService.selectById(etl_task_id);
-
-        Map<String,Object> map=(Map<String,Object>) JSON.parseObject(dti.getParams());
-        //此处做参数匹配转换
-        if(map!=null){
-            System.out.println("自定义参数不为空,开始替换:"+dti.getParams());
-            map.forEach((k,v) ->{
-                System.out.println("key:"+k+",value:"+v);
-                String filter=etlTaskInfo.getData_sources_filter_input();
-                etlTaskInfo.setData_sources_filter_input(filter.replace(k,v.toString()));
-                String clear=etlTaskInfo.getData_sources_clear_output();
-                etlTaskInfo.setData_sources_clear_output(clear.replace(k,v.toString()));
-            });
-
-
-        }
-
-        //获取数据源信息
-        String data_sources_choose_input=etlTaskInfo.getData_sources_choose_input();
-        String data_sources_choose_output=etlTaskInfo.getData_sources_choose_output();
-        DataSourcesInfo dataSourcesInfoInput=dataSourcesServiceImpl.selectById(data_sources_choose_input);
-        DataSourcesInfo dataSourcesInfoOutput=null;
-        if( !data_sources_choose_input.equals(data_sources_choose_output)){
-            dataSourcesInfoOutput=dataSourcesServiceImpl.selectById(data_sources_choose_output);
-        }else{
-            dataSourcesInfoOutput=dataSourcesInfoInput;
-        }
-
-        ZdhInfo zdhInfo=new ZdhInfo();
-        zdhInfo.setZdhInfo(dataSourcesInfoInput,etlTaskInfo,dataSourcesInfoOutput,dti);
-
-
-        try{
-            HttpUtil.postJSON(url,JSON.toJSONString(zdhInfo));
-        }catch (Exception e){
+        try {
+            HttpUtil.postJSON(url, JSON.toJSONString(zdhInfo));
+        } catch (Exception e) {
             System.out.println(e.getMessage());
+        }
+
+        JSONObject json = new JSONObject();
+
+        json.put("success", "200");
+        return json.toJSONString();
+    }
+
+
+    @RequestMapping("/dispatch_task_execute_quartz")
+    @ResponseBody
+    public String dispatch_task_execute_quartz(QuartzJobInfo quartzJobInfo) {
+
+        debugInfo(quartzJobInfo);
+
+        // dispatchTaskService.update(dispatchTaskInfo);
+        String url = "http://127.0.0.1:60001/api/v1/zdh";
+        QuartzJobInfo dti = quartzJobMapper.selectByPrimaryKey(quartzJobInfo.getJob_id());
+
+        //ZdhInfo zdhInfo = create_zhdInfo(quartzJobInfo);
+        //重置次数
+        dti.setCount(0);
+        quartzManager2.addTaskToQuartz(dti);
+
+        JSONObject json = new JSONObject();
+
+        json.put("success", "200");
+        return json.toJSONString();
+    }
+
+
+    @RequestMapping("/dispatch_task_quartz_pause")
+    @ResponseBody
+    public String dispatch_task_quartz_pause(QuartzJobInfo quartzJobInfo) {
+
+        debugInfo(quartzJobInfo);
+        QuartzJobInfo dti = quartzJobMapper.selectByPrimaryKey(quartzJobInfo.getJob_id());
+
+        if(quartzJobInfo.getStatus().equals("running")){
+            //需要恢复暂停任务
+            quartzManager2.resumeTask(dti);
+            quartzJobMapper.updateStatus(quartzJobInfo.getJob_id(),quartzJobInfo.getStatus());
+        }else{
+            //暂停任务,//状态在pauseTask 方法中修改
+            quartzManager2.pauseTask(dti);
         }
 
 
@@ -409,6 +434,63 @@ public class ZdhController {
         return json.toJSONString();
     }
 
+    @RequestMapping("/dispatch_task_quartz_del")
+    @ResponseBody
+    public String dispatch_task_quartz_del(QuartzJobInfo quartzJobInfo){
+
+        QuartzJobInfo qji= quartzJobMapper.selectByPrimaryKey(quartzJobInfo);
+        quartzManager2.deleteTask(qji);
+        JSONObject json = new JSONObject();
+
+        json.put("success", "200");
+        return json.toJSONString();
+    }
+
+    private ZdhInfo create_zhdInfo(QuartzJobInfo quartzJobInfo) {
+        // dispatchTaskService.update(dispatchTaskInfo);
+
+
+        //获取调度任务信息
+        QuartzJobInfo dti = quartzJobMapper.selectByPrimaryKey(quartzJobInfo.getJob_id());
+
+        String etl_task_id = dti.getEtl_task_id();
+        //获取etl 任务信息
+        EtlTaskInfo etlTaskInfo = etlTaskService.selectById(etl_task_id);
+
+        Map<String, Object> map = (Map<String, Object>) JSON.parseObject(dti.getParams());
+        //此处做参数匹配转换
+        if (map != null) {
+            System.out.println("自定义参数不为空,开始替换:" + dti.getParams());
+            map.forEach((k, v) -> {
+                System.out.println("key:" + k + ",value:" + v);
+                String filter = etlTaskInfo.getData_sources_filter_input();
+                etlTaskInfo.setData_sources_filter_input(filter.replace(k, v.toString()));
+                String clear = etlTaskInfo.getData_sources_clear_output();
+                etlTaskInfo.setData_sources_clear_output(clear.replace(k, v.toString()));
+            });
+
+
+        }
+
+        //获取数据源信息
+        String data_sources_choose_input = etlTaskInfo.getData_sources_choose_input();
+        String data_sources_choose_output = etlTaskInfo.getData_sources_choose_output();
+        DataSourcesInfo dataSourcesInfoInput = dataSourcesServiceImpl.selectById(data_sources_choose_input);
+        DataSourcesInfo dataSourcesInfoOutput = null;
+        if (!data_sources_choose_input.equals(data_sources_choose_output)) {
+            dataSourcesInfoOutput = dataSourcesServiceImpl.selectById(data_sources_choose_output);
+        } else {
+            dataSourcesInfoOutput = dataSourcesInfoInput;
+        }
+
+        ZdhInfo zdhInfo = new ZdhInfo();
+        zdhInfo.setZdhInfo(dataSourcesInfoInput, etlTaskInfo, dataSourcesInfoOutput, dti);
+
+        return zdhInfo;
+
+
+    }
+
 
     @RequestMapping("/log_txt")
     public String log_txt() {
@@ -416,40 +498,40 @@ public class ZdhController {
         return "etl/log_txt";
     }
 
-    @RequestMapping(value="/zhd_logs", produces = "text/html;charset=UTF-8")
+    @RequestMapping(value = "/zhd_logs", produces = "text/html;charset=UTF-8")
     @ResponseBody
-    public String zhd_logs(String id,String start_time,String end_time){
-        System.out.println("id:"+id+",start_time:"+start_time+",end_time:"+end_time);
+    public String zhd_logs(String id, String start_time, String end_time) {
+        System.out.println("id:" + id + ",start_time:" + start_time + ",end_time:" + end_time);
 
-        Timestamp ts_start=null;
-        Timestamp ts_end=null;
-        if(!start_time.equals("")){
-            ts_start=Timestamp.valueOf(start_time+":00");
-        }else{
-            ts_start=Timestamp.valueOf("1970-01-01 00:00:00");
+        Timestamp ts_start = null;
+        Timestamp ts_end = null;
+        if (!start_time.equals("")) {
+            ts_start = Timestamp.valueOf(start_time + ":00");
+        } else {
+            ts_start = Timestamp.valueOf("1970-01-01 00:00:00");
         }
-        if(!start_time.equals("")){
-            ts_end=Timestamp.valueOf(end_time+":00");
-        }else{
-            ts_end=Timestamp.valueOf("2999-01-01 00:00:00");
-        }
-
-        List<ZdhLogs> zhdLogs=zdhLogsService.selectByTime(id,ts_start,ts_end);
-        Iterator<ZdhLogs> it=zhdLogs.iterator();
-        StringBuilder sb=new StringBuilder();
-        while(it.hasNext()){
-            ZdhLogs next=it.next();
-            String info="任务ID:"+next.getEtl_task_id()+",任务执行时间:"+next.getLog_time().toString()+",日志:"+next.getMsg();
-            sb.append(info+"\r\n");
+        if (!start_time.equals("")) {
+            ts_end = Timestamp.valueOf(end_time + ":00");
+        } else {
+            ts_end = Timestamp.valueOf("2999-01-01 00:00:00");
         }
 
-        JSONObject jsonObject=new JSONObject();
-        jsonObject.put("logs",sb.toString());
+        List<ZdhLogs> zhdLogs = zdhLogsService.selectByTime(id, ts_start, ts_end);
+        Iterator<ZdhLogs> it = zhdLogs.iterator();
+        StringBuilder sb = new StringBuilder();
+        while (it.hasNext()) {
+            ZdhLogs next = it.next();
+            String info = "任务ID:" + next.getEtl_task_id() + ",任务执行时间:" + next.getLog_time().toString() + ",日志:" + next.getMsg();
+            sb.append(info + "\r\n");
+        }
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("logs", sb.toString());
         return jsonObject.toJSONString();
     }
 
 
-    public User getUser(){
+    public User getUser() {
         User user = (User) SecurityUtils.getSubject().getPrincipal();
         return user;
     }
@@ -460,7 +542,6 @@ public class ZdhController {
 
         return "layer";
     }
-
 
 
     @RequestMapping("/form_basic")
@@ -488,9 +569,9 @@ public class ZdhController {
     }
 
 
-    private void debugInfo(Object obj){
+    private void debugInfo(Object obj) {
         Field[] fields = obj.getClass().getDeclaredFields();
-        for(int i = 0 , len = fields.length; i < len; i++) {
+        for (int i = 0, len = fields.length; i < len; i++) {
             // 对于每个属性，获取属性名
             String varName = fields[i].getName();
             try {

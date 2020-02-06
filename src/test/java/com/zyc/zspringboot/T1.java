@@ -24,5 +24,9 @@ public class T1 {
 
         str.substring(index);
 
+
+        System.out.println(Long.MAX_VALUE);
+
+
     }
 }

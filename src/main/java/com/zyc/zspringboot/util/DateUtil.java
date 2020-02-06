@@ -25,4 +25,8 @@ public class DateUtil {
         beginDate.add(Calendar.DAY_OF_MONTH, dayNum);
         return beginDate.getTime();
     }
+
+    public static Date pase(String date) throws Exception{
+        return df.parse(date);
+    }
 }

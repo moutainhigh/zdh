@@ -1,9 +1,12 @@
 package com.zyc.zspringboot.entity;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.Date;
 
 
@@ -15,17 +18,20 @@ public class QuartzJobInfo implements Serializable {
     private String job_id;//任务id,
     private String job_context;//任务说明
     private String job_type;// 任务类型,SHELL,FTP,CLASS
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date start_time;// 起始时间
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date end_time;// 结束时间
-    private int job_model;// 执行模式(顺时间执行0，执行一次1，重复执行2),
-    private int plan_count;//计划执行次数
+    private String job_model;// 执行模式(顺时间执行1，执行一次2，重复执行3),
+    private String plan_count;//计划执行次数
+    private long count=0;//执行次数
     private String command;// command,
     private String params;// 参数,
     private String last_status;// 上次任务是否执行完必
     private Date last_time;// 上次任务执行时间,
     private Date next_time;// 下次任务执行时间,
     private String expr;// quartz 表达式
-    private String status;// 任务状态
+    private String status;// 任务状态,create,running,pause,finish,remove,error
     private String ip;//服务器地址,
     private String user;//用户名，
     private String password;//密码
@@ -33,6 +39,13 @@ public class QuartzJobInfo implements Serializable {
     private String etl_context;
     private String  owner;
 
+    public long getCount() {
+        return count;
+    }
+
+    public void setCount(long count) {
+        this.count = count;
+    }
 
     public String getEtl_context() {
         return etl_context;
@@ -51,11 +64,11 @@ public class QuartzJobInfo implements Serializable {
     }
 
 
-    public int getPlan_count() {
+    public String getPlan_count() {
         return plan_count;
     }
 
-    public void setPlan_count(int plan_count) {
+    public void setPlan_count(String plan_count) {
         this.plan_count = plan_count;
     }
 
@@ -99,11 +112,11 @@ public class QuartzJobInfo implements Serializable {
         this.end_time = end_time;
     }
 
-    public int getJob_model() {
+    public String getJob_model() {
         return job_model;
     }
 
-    public void setJob_model(int job_model) {
+    public void setJob_model(String job_model) {
         this.job_model = job_model;
     }
 

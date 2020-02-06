@@ -2,15 +2,15 @@ package com.zyc.zspringboot.job;
 
 public enum JobModel {
 
-    TIME_SEQ(0),ONCE(1),REPEAT(2);
+    TIME_SEQ("1"),ONCE("2"),REPEAT("3");
 
-    private int value;
+    private String value;
 
 
-    private JobModel(int value) {
+    private JobModel(String value) {
         this.value = value;
     }
-    public int getValue() {
+    public String getValue() {
         return value;
     }
 }

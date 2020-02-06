@@ -20,6 +20,7 @@
     <link href="css/animate.css" rel="stylesheet">
     <link href="css/style.css?v=4.1.0" rel="stylesheet">
     <link href="css/plugins/bootstrap-table/bootstrap-table.min.css" rel="stylesheet">
+    <link href="css/plugins/datetimepicker/datetimepicker.css" rel="stylesheet">
 
 </head>
 
@@ -50,7 +51,7 @@
                             </div>
                         </div>
 
-                        <div class="hr-line-dashed"></div>
+
 
                         <div class="form-group">
                             <label class="col-sm-2 control-label">ETL任务</label>
@@ -61,6 +62,88 @@
                                 </select>
                             </div>
                         </div>
+
+                        <div class="hr-line-dashed"></div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">任务类型</label>
+                            <div class="col-sm-10">
+                                <select id="job_type" name="job_type" data-placeholder="选择任务类型..."
+                                        class="chosen-select form-control m-b" tabindex="2">
+                                    <option value="" mytype=""></option>
+                                    <option value="SHELL" mytype="">SHELL</option>
+                                    <option value="FTP" mytype="">FTP</option>
+                                    <option value="CLASS" mytype="">CLASS</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">表达式</label>
+                            <div class="col-sm-10">
+                                <input id="expr" name="expr" type="text"
+                                       placeholder="example:100s,100m,100h or corn 表达式" class="form-control" aria-required="true"> </span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">开始时间</label>
+                            <div class="col-sm-10">
+                                <div class="input-group date form_datetime" >
+                                    <input id="start_time" name="start_time" class="form-control" type="text" value="" placeholder="开始时间" readonly>
+                                    <span class="add-on"><i class="icon-remove"></i></span>
+                                    <span class="add-on"><i class="icon-calendar"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">结束时间</label>
+                            <div class="col-sm-10">
+                                <div class="input-group date form_datetime" >
+                                    <input id="end_time" name="end_time" class="form-control" type="text" value="" placeholder="结束时间" readonly>
+                                    <span class="add-on"><i class="icon-remove"></i></span>
+                                    <span class="add-on"><i class="icon-calendar"></i></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">执行模式</label>
+                            <div class="col-sm-10">
+                                <select id="job_model" name="job_model" data-placeholder="选择执行模式..."
+                                        class="chosen-select form-control m-b" tabindex="2">
+                                    <option value="" mytype=""></option>
+                                    <option value="1" mytype="">顺时间执行</option>
+                                    <option value="2" mytype="">执行一次</option>
+                                    <option value="3" mytype="">重复执行</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">计划执行次数</label>
+                            <div class="col-sm-10">
+                                <input id="plan_count" name="plan_count" type="text" value="-1"
+                                       placeholder="计划执行次数,设置-1 代表限制" class="form-control" aria-required="true"> </span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">SHELL命令</label>
+                            <div class="col-sm-10">
+                                <input id="command" name="command" type="text"
+                                       placeholder="SHELL命令" class="form-control" aria-required="true"> </span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">任务状态</label>
+                            <div class="col-sm-10">
+                                <input id="status" name="status" type="text"
+                                       placeholder="任务状态" class="form-control" aria-required="true" readonly> </span>
+                            </div>
+                        </div>
+
 
                         <div class="hr-line-dashed"></div>
                         <!-- 输入数据源开始-->
@@ -103,19 +186,6 @@
 </div>
 
 
-<div  id="data_sources_params" class="ibox-content" style="display: none;">
-    <p>数据源其他参数api</p>
-    <ul>
-        <li>JDBC:</li>
-        <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;空</li>
-        <li>HDFS:</li>
-        <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    sep:分割符</li>
-        <li>HIVE:</li>
-        <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;format:orc,parquet</li>
-        <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;partitionBy:分区字段</li>
-
-    </ul>
-</div>
 <!-- 全局js -->
 <script src="js/jquery.min.js?v=2.1.4"></script>
 <script src="js/bootstrap.min.js?v=3.3.6"></script>
@@ -139,6 +209,12 @@
 
 <!-- iCheck -->
 <script src="js/plugins/iCheck/icheck.min.js"></script>
+
+<script src="js/plugins/datetimepicker/bootstrap-datetimepicker.min.js"></script>
+
+<script src="js/plugins/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+
+
 <script>
     $(document).ready(function () {
         $('.i-checks').iCheck({
@@ -203,6 +279,50 @@
 
             // ------------------------------------------------------------------
 
+            $("#start_time").datetimepicker({
+                format: 'yyyy-mm-dd',
+                autoclose:true,
+                minView:2,
+                pickerPosition: "top-right",
+                language:"zh-CN", //语言选择中文 注：旧版本 新版方法：$.datetimepicker.setLocale('ch');
+                yearStart:2000,     //设置最小年份
+                yearEnd:2050,        //设置最大年份
+                todayButton:true    //关闭选择今天按钮
+            });
+
+            $("#end_time").datetimepicker({
+                format: 'yyyy-mm-dd',
+                autoclose:true,
+                minView:2,
+                pickerPosition: "top-right",
+                language:"zh-CN", //语言选择中文 注：旧版本 新版方法：$.datetimepicker.setLocale('ch');
+                yearStart:2000,     //设置最小年份
+                yearEnd:2050,        //设置最大年份
+                todayButton:true    //关闭选择今天按钮
+            });
+
+            $('#job_type').chosen();
+            $('#job_model').chosen();
+
+
+            function getMyDate(str){
+                var oDate = new Date(str),
+                    oYear = oDate.getFullYear(),
+                    oMonth = oDate.getMonth()+1,
+                    oDay = oDate.getDate(),
+                    oHour = oDate.getHours(),
+                    oMin = oDate.getMinutes(),
+                    oSen = oDate.getSeconds(),
+                    oTime = oYear +'-'+ getzf(oMonth) +'-'+ getzf(oDay);//最后拼接时间
+                return oTime;
+            };
+            //补0操作
+            function getzf(num){
+                if(parseInt(num) < 10){
+                    num = '0'+num;
+                }
+                return num;
+            }
 
             if(s.id !='-1'){
                 console.info("edit page.....")
@@ -223,6 +343,44 @@
                         //初始化输入数据源select 组件
                         $("#etl_task_id").val(etl_task_id);
                         $("#etl_task_id").trigger("chosen:updated");
+
+                        //任务类型
+                        var job_type=data[0].job_type
+                        //初始化输入数据源select 组件
+                        $("#job_type").val(job_type);
+                        $("#job_type").trigger("chosen:updated");
+
+                        //表达式expr
+                        var expr=data[0].expr
+                        $("#expr").val(expr);
+
+                        //开始时间
+                        var start_time=data[0].start_time
+                        if(start_time!=''){
+                            $("#start_time").val(getMyDate(start_time));
+                        }
+
+                        //开始时间
+                        var end_time=data[0].end_time
+                        if(end_time!=''){
+                            $("#end_time").val(getMyDate(end_time));
+                        }
+
+                        //执行模式job_model
+                        var job_model=data[0].job_model
+                        //初始化输入数据源select 组件
+                        $("#job_model").val(job_model);
+                        $("#job_model").trigger("chosen:updated");
+
+                        var plan_count=data[0].plan_count
+                        $("#plan_count").val(plan_count);
+
+                        var command=data[0].command
+                        $("#command").val(command);
+
+                        //status
+                        var status=data[0].status
+                        $("#status").val(status);
 
                         //获取输入源数据其他参数
                         var params=data[0].params
@@ -267,6 +425,28 @@
         //自定义实现
         var etl_context=$('#etl_task_id').find("option:selected").text();
 
+        if($('#expr').val()==''){
+            layer.msg("调度任务表达式不可为空")
+            return false
+        }
+
+        if($('#start_time').val()==''){
+            layer.msg("调度开始时间不可为空")
+            return false
+        }
+
+        if($('#end_time').val()==''){
+            layer.msg("调度结束时间不可为空")
+            return false
+        }
+
+        var oDate1 = new Date($('#start_time').val());
+        var oDate2 = new Date($('#end_time').val());
+        if(oDate1 > oDate2){
+            layer.msg("结束时间大于开始时间")
+            return false
+        }
+
         $.ajax({
             type: 'POST',
             url: "dispatch_task_add",
@@ -285,12 +465,13 @@
             },
             //处理完成
             complete: function () {
+                $("#save_dispatch_task").removeAttr('disabled');
                 console.info("complete")
             },
             //报错
             error: function (data) {
-                $("#save_etl_task").removeAttr('disabled');
-                layer.error(data.responseText);
+                $("#save_dispatch_task").removeAttr('disabled');
+                layer.msg(data.responseText);
                 console.info("error: " + data.responseText);
             }
         });
@@ -309,11 +490,35 @@
         }
 
         var etl_context=$('#etl_task_id').find("option:selected").text();
+
+        if($('#expr').val()==''){
+            layer.msg("调度任务表达式不可为空")
+            return false
+        }
+
+        if($('#start_time').val()==''){
+            layer.msg("调度开始时间不可为空")
+            return false
+        }
+
+        if($('#end_time').val()==''){
+            layer.msg("调度结束时间不可为空")
+            return false
+        }
+
+        var oDate1 = new Date($('#start_time').val());
+        var oDate2 = new Date($('#end_time').val());
+        if(oDate1 > oDate2){
+            layer.msg("结束时间大于开始时间")
+            return false
+        }
+
+
         $.ajax({
             type: 'POST',
             url: "dispatch_task_update",
             dataType: 'json',
-            data: $("#dispatch_task_add_form").serialize()+"&etl_context="+etl_context+"&id="+s.id,
+            data: $("#dispatch_task_add_form").serialize()+"&etl_context="+etl_context+"&job_id="+s.id,
             //发送数据前
             beforeSend: function () {
                 // 禁用按钮防止重复提交
@@ -327,12 +532,13 @@
             },
             //处理完成
             complete: function () {
+                $("#update_dispatch_task").removeAttr('disabled');
                 console.info("complete")
             },
             //报错
             error: function (data) {
                 $("#update_dispatch_task").removeAttr('disabled');
-                layer.error(data.responseText);
+                //layer.error(data.responseText);
                 console.info("error: " + data.responseText);
             }
         });

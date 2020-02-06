@@ -29,8 +29,8 @@ public class QuartzManager2 {
 	 * 根据任务名，对应的表名，表达式创建任务
 	 * @return
 	 */
-	public QuartzJobInfo createQuartzJobInfo(String job_type, int job_model,Date start_date,Date end_date,String job_context,
-			String expr, int plancount,String command,String etl_task_id) {
+	public QuartzJobInfo createQuartzJobInfo(String job_type, String job_model,Date start_date,Date end_date,String job_context,
+			String expr, String plancount,String command,String etl_task_id) {
 		QuartzJobInfo quartzJobInfo = new QuartzJobInfo();
 
 		quartzJobInfo.setJob_id(SnowflakeIdWorker.getInstance().nextId()+"");
@@ -87,7 +87,7 @@ public class QuartzManager2 {
 			if (expression.contains("s") || expression.contains("m")
 					|| expression.contains("h")) {
 				SimpleScheduleBuilder simpleScheduleBuilder = getSimpleScheduleBuilder(
-						expression, quartzJobInfo.getPlan_count());
+						expression, Integer.parseInt(quartzJobInfo.getPlan_count()));
 				trigger = TriggerBuilder
 						.newTrigger()
 						.withIdentity(quartzJobInfo.getJob_id(), quartzJobInfo.getEtl_task_id()).startNow()
@@ -103,7 +103,7 @@ public class QuartzManager2 {
 					.toString());
 			JobDataMap jobDataMap = trigger.getJobDataMap();
 			jobDataMap.put(MyJobBean.TASK_ID, quartzJobInfo.getJob_id());
-			quartzJobInfo.setStatus("start");
+			quartzJobInfo.setStatus("running");
 			quartzJobMapper.updateByPrimaryKey(quartzJobInfo);
 			schedulerFactoryBean.getScheduler().scheduleJob(jobDetail, trigger);
 			if (!schedulerFactoryBean.getScheduler().isStarted()) {
@@ -142,7 +142,7 @@ public class QuartzManager2 {
 								new TriggerKey(quartzJobInfo.getJob_id(), quartzJobInfo.getEtl_task_id()))
 						.withSchedule(
 								getSimpleScheduleBuilder(expression,
-										quartzJobInfo.getPlan_count())).build();
+										Integer.parseInt(quartzJobInfo.getPlan_count()))).build();
 
 				/*
 				 * trigger=TriggerBuilder.newTrigger().startNow() .withIdentity(
