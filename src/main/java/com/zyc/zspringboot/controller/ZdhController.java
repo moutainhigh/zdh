@@ -439,7 +439,7 @@ public class ZdhController {
     public String dispatch_task_quartz_del(QuartzJobInfo quartzJobInfo){
 
         QuartzJobInfo qji= quartzJobMapper.selectByPrimaryKey(quartzJobInfo);
-        quartzManager2.deleteTask(qji);
+        quartzManager2.deleteTask(qji,"remove");
         JSONObject json = new JSONObject();
 
         json.put("success", "200");

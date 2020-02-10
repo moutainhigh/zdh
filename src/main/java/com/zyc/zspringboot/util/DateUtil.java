@@ -10,6 +10,8 @@ public class DateUtil {
 
     public static final FastDateFormat df
             = FastDateFormat.getInstance("yyyy-MM-dd");
+    public static final FastDateFormat df_nodash
+            = FastDateFormat.getInstance("yyyyMMdd");
 
 
     /** *
@@ -28,5 +30,14 @@ public class DateUtil {
 
     public static Date pase(String date) throws Exception{
         return df.parse(date);
+    }
+
+
+    public static String  format(Date date){
+       return df.format(date);
+    }
+
+    public static String  formatNodash(Date date){
+        return df_nodash.format(date);
     }
 }

@@ -63,7 +63,7 @@ public class QuartzTest {
 		quartzJobInfo.setJob_id("674733379031138304");
 		quartzJobInfo=quartzJobMapper.selectByPrimaryKey(quartzJobInfo);
 
-		quartzManager2.deleteTask(quartzJobInfo);
+		quartzManager2.deleteTask(quartzJobInfo,"remove");
 		while (true) {
 
 		}

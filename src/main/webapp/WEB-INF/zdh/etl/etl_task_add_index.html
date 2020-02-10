@@ -137,7 +137,7 @@
 
                                 <!-- Example Events -->
                                 <div class="btn-group">
-                                    <button id="add_row" class="btn btn-primary btn-xs" type="button" style="height: 20px" onclick='addRow(1)'
+                                    <button id="add_row" class="btn btn-primary btn-xs" type="button" style="height: 20px" onclick='addRow("zdh_add_expr")'
                                             οnsubmit='return false'> <i class="glyphicon glyphicon-plus" aria-hidden="true"></i></button>
                                     <!--<button class="btn btn-primary" type="button">中</button>-->
                                     <!--<button class="btn btn-white" type="button">右</button>-->
@@ -841,9 +841,19 @@
 
     //bootstrap table 增加一行
     function addRow(column){
-        var index=$('#row_num').val()
+        var index=$('#row_num').val();
         if(index=='')
          index = $('#exampleTableEvents').bootstrapTable('getData').length;
+        if(column == "zdh_add_expr"){
+            function guid() {
+                return 'xxx-4xxx-yxxx-xx'.replace(/[xy]/g, function (c) {
+                    var r = Math.random() * 16 | 0,
+                        v = c == 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            }
+            column=guid()
+        }
         // newFlag == 1的数据为新规的数据
         $('#exampleTableEvents').bootstrapTable('insertRow',{index:index,row:{column_expr:column,column_alias:column}});
     }

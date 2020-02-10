@@ -185,7 +185,7 @@ public class QuartzManager2 {
 	 * @return
 	 */
 	public void reStartTask2(QuartzJobInfo quartzJobInfo){
-		deleteTask(quartzJobInfo);
+		deleteTask(quartzJobInfo,"finish");
 		addTaskToQuartz(quartzJobInfo);
 	}
 	
@@ -195,14 +195,15 @@ public class QuartzManager2 {
 	 * @param quartzJobInfo
 	 * @return
 	 */
-	public QuartzJobInfo deleteTask(QuartzJobInfo quartzJobInfo) {
+	public QuartzJobInfo deleteTask(QuartzJobInfo quartzJobInfo,String status) {
 		try {
 			Scheduler scheduler = schedulerFactoryBean.getScheduler();
 			JobKey jobKey = new JobKey(quartzJobInfo.getJob_id(), quartzJobInfo.getEtl_task_id());
 			scheduler.pauseJob(jobKey);
 			scheduler.deleteJob(jobKey);
 			// 在自己定义的任务表中删除任务,状态删除
-			quartzJobInfo.setStatus("finish");
+			if(status.equals("")) status="finish";
+			quartzJobInfo.setStatus(status);
 			quartzJobMapper.updateByPrimaryKey(quartzJobInfo);
 		} catch (SchedulerException e) {
 

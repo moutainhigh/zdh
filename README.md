@@ -35,6 +35,6 @@
 
 ![etl](img/etl_add.jpg)
 
-![dispatch](img/dispatch.jpg)
+![dispatch](img/dispatch_list.jpg)
  
  

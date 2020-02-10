@@ -49,12 +49,14 @@ public class MyWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter {
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 		//registry.addResourceHandler("/**").addResourceLocations("/");
-		registry.addResourceHandler("/register**","/static/**","/css/**","/js/**","/fonts/**","/img/**","/plugins/**")
+		registry.addResourceHandler("/register**","/static/**","/css/**","/js/**","/fonts/**","/img/**",
+				"/plugins/**","/zdh_flow/**")
 				.addResourceLocations("/WEB-INF/zdh/")
 				.addResourceLocations(
 				"/static/").addResourceLocations("/WEB-INF/zdh/css/").addResourceLocations("/WEB-INF/zdh/js/")
 				.addResourceLocations("/WEB-INF/zdh/fonts/").addResourceLocations("/WEB-INF/zdh/img/")
-				.addResourceLocations("/WEB-INF/zdh/plugins/");
+				.addResourceLocations("/WEB-INF/zdh/plugins/")
+				.addResourceLocations("/WEB-INF/zdh/zdh_flow/");
 
 	}
 
