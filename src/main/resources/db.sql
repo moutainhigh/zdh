@@ -108,8 +108,8 @@ PRIMARY KEY (TASK_ID)
 );
 
 
-drop TABLE if EXISTS zhd_logs;
-create table zhd_logs(
+drop TABLE if EXISTS zdh_logs;
+create table zdh_logs(
 etl_task_id VARCHAR(100),
 log_time TIMESTAMP ,
 msg text

@@ -71,7 +71,11 @@ public class CommandUtils {
 
     public static void main(String[] args) {
         try {
-            String result = exeCommand("ipconfig /all");
+            String result = exeCommand("cmd.exe /c if exist D:/postal_fund_app.jar (\n" +
+                    "       echo true\n" +
+                    "    ) else (\n" +
+                    "        echo false\n" +
+                    "    )");
             System.out.println(result);
         } catch (IOException e) {
             e.printStackTrace();

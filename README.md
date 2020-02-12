@@ -16,6 +16,17 @@
     数据ETL引擎:Spark(hadoop,hive 可选择部署)
     
 
+# 打包
+    
+    清理命令 mvn clean
+    打包命令 mvn package -Dmaven.test.skip=true
+
+# 运行
+    在target 目录下找到zdh.jar
+    执行 java  -Dfile.encoding=utf-8 -jar zdh.jar
+    
+    
+
 # 提示
    
     zdh 分2部分,前端配置+后端数据ETL处理,此部分只包含前端配置,有意者联系1299898281@qq.com

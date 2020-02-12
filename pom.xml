@@ -5,7 +5,7 @@
 
     <groupId>com.zyc</groupId>
     <artifactId>zspringboot</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0-REALEASE</version>
     <packaging>jar</packaging>
 
     <name>zspringboot</name>
@@ -256,6 +256,7 @@
     </repositories>
 
     <build>
+        <finalName>zdh</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

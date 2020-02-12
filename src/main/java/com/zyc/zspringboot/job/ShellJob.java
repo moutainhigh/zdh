@@ -1,14 +1,15 @@
 package com.zyc.zspringboot.job;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.zyc.zspringboot.dao.QuartzJobMapper;
-import com.zyc.zspringboot.entity.DataSourcesInfo;
-import com.zyc.zspringboot.entity.EtlTaskInfo;
-import com.zyc.zspringboot.entity.QuartzJobInfo;
-import com.zyc.zspringboot.entity.ZdhInfo;
+import com.zyc.zspringboot.entity.*;
 import com.zyc.zspringboot.quartz.QuartzManager2;
 import com.zyc.zspringboot.service.EtlTaskService;
+import com.zyc.zspringboot.service.ZdhLogsService;
 import com.zyc.zspringboot.service.impl.DataSourcesServiceImpl;
+import com.zyc.zspringboot.service.impl.ZdhLogsServiceImpl;
+import com.zyc.zspringboot.util.CommandUtils;
 import com.zyc.zspringboot.util.DateUtil;
 import com.zyc.zspringboot.util.HttpUtil;
 import com.zyc.zspringboot.util.SpringContext;
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Map;
 import java.util.Scanner;
@@ -72,9 +74,13 @@ public class ShellJob {
                     }
                     String date_nodash=DateUtil.formatNodash(quartzJobInfo.getNext_time());
                     String date=DateUtil.format(quartzJobInfo.getNext_time());
-                    String result=run(quartzJobInfo.getCommand().
-                            replace("zdh.date.nodash",date_nodash).
-                            replace("zdh.date",date).split(";"));
+//                    String result=run(quartzJobInfo.getCommand().
+//                            replace("zdh.date.nodash", date_nodash).
+//                            replace("zdh.date", date).split(";"));
+
+                    String result=CommandUtils.exeCommand(quartzJobInfo.getCommand().
+                            replace("zdh.date.nodash", date_nodash).
+                            replace("zdh.date", date));
                     if( !result.equals("true")){
                         throw new Exception("文件不存在");
                     }
@@ -91,6 +97,8 @@ public class ShellJob {
             QuartzJobMapper quartzJobMapper = (QuartzJobMapper) SpringContext.getBean("quartzJobMapper");
             EtlTaskService etlTaskService = (EtlTaskService) SpringContext.getBean("etlTaskServiceImpl");
             DataSourcesServiceImpl dataSourcesServiceImpl = (DataSourcesServiceImpl) SpringContext.getBean("dataSourcesServiceImpl");
+            ZdhLogsService zdhLogsService = (ZdhLogsService) SpringContext.getBean("zdhLogsServiceImpl");
+
             String params = quartzJobInfo.getParams().trim();
             String url = "http://127.0.0.1:60001/api/v1/zdh";
             if (!params.equals("")) {
@@ -98,14 +106,26 @@ public class ShellJob {
                 if (value != null && !value.equals("")) {
                     url = value;
                 }
+                JSONObject json=JSON.parseObject(params);
+                String date=DateUtil.format(quartzJobInfo.getNext_time());
+                json.put("ETL_DATE",date);
+                logger.info("[SHELL] JOB ,处理当前日期,传递参数ETL_DATE 为"+date);
+                quartzJobInfo.setParams(json.toJSONString());
+
             }
             logger.info("[SHELL] JOB ,获取当前的[url]:" + url);
 
             ZdhInfo zdhInfo = create_zhdInfo(quartzJobInfo, quartzJobMapper, etlTaskService, dataSourcesServiceImpl);
             try {
-                if(exe_status){
+                if(exe_status==false){
                     logger.info("[SHELL] JOB ,开始发送ETL处理请求");
                     HttpUtil.postJSON(url, JSON.toJSONString(zdhInfo));
+                    ZdhLogs zdhLogs=new ZdhLogs();
+                    zdhLogs.setEtl_task_id(zdhInfo.getQuartzJobInfo().getJob_id());
+                    Timestamp lon_time=new Timestamp(new Date().getTime());
+                    zdhLogs.setLog_time(lon_time);
+                    zdhLogs.setMsg("[调度平台]:"+JSON.toJSONString(zdhInfo));
+                    zdhLogsService.insert(zdhLogs);
                 }
             } catch (Exception e) {
                 logger.error(e.getMessage());
