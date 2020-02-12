@@ -10,7 +10,7 @@ email varchar(100),
 PRIMARY KEY (id)
 );
 
-insert into account_info VALUES ("zyc@qq.com","e10adc3949ba59abbe56e057f20f883e");
+INSERT INTO `account_info` VALUES (2,'zyc','123456','zyc@qq.com');
 
 drop table data_sources_info;
 create table data_sources_info(
@@ -24,6 +24,8 @@ create table data_sources_info(
  owner varchar(100),
   PRIMARY KEY (id)
 );
+
+INSERT INTO `data_sources_info` VALUES (53,'mydb','JDBC','com.mysql.cj.jdbc.Driver','jdbc:mysql://127.0.0.1:3306/mydb?serverTimezone=GMT%2B8&useSSL=false','zyc','123456','2'),(54,'csv','HDFS','','','zyc@qq.com','123456','2'),(55,'mydb2','JDBC','com.mysql.cj.jdbc.Driver','jdbc:mysql://127.0.0.1:3306/mydb?serverTimezone=GMT%2B8&useSSL=false','zyc','123456','2'),(56,'HIVE1','HIVE','','','','','2');
 
 drop table if EXISTS etl_task_info;
 create table etl_task_info(
@@ -49,6 +51,8 @@ create table etl_task_info(
    PRIMARY KEY (id)
 );
 
+INSERT INTO `etl_task_info` VALUES (2,'我的第一个ETL任务','53','JDBC','data_sources_info','','','id,data_source_context,data_source_type,driver,url,username,password','','','53','JDBC','t2','t2','','[{\"column_expr\":\"id\",\"column_alias\":\"id\"},{\"column_expr\":\"data_source_context\",\"column_alias\":\"data_source_context\"},{\"column_expr\":\"data_source_type\",\"column_alias\":\"data_source_type\"},{\"column_expr\":\"driver\",\"column_alias\":\"driver\"},{\"column_expr\":\"url\",\"column_alias\":\"url\"},{\"column_expr\":\"username\",\"column_alias\":\"username\"},{\"column_expr\":\"password\",\"column_alias\":\"password\"}]','','2'),(3,'mydb.data_source_info -> csv','53','JDBC','data_sources_info','','','id,data_source_context,data_source_type,driver,url,username,password','','','54','HDFS','','/mydb.data_source_info','{\"fileType\":\"csv\",\"model\":\"overwrite\"}','[{\"column_expr\":\"id\",\"column_alias\":\"id\"},{\"column_expr\":\"data_source_context\",\"column_alias\":\"data_source_context\"},{\"column_expr\":\"data_source_type\",\"column_alias\":\"data_source_type\"},{\"column_expr\":\"driver\",\"column_alias\":\"driver\"},{\"column_expr\":\"url\",\"column_alias\":\"url\"},{\"column_expr\":\"username\",\"column_alias\":\"username\"},{\"column_expr\":\"password\",\"column_alias\":\"password\"}]','','2'),(4,'csv->mydb.t6','54','HDFS','','/mydb.data_source_info','id,data_source_context,data_source_type,driver,url,username,password','','{\"fileType\":\"orc\"}','','53','JDBC','t6','t6','','[{\"column_expr\":\"id\",\"column_alias\":\"id\"},{\"column_expr\":\"data_source_context\",\"column_alias\":\"data_source_context\"},{\"column_expr\":\"data_source_type\",\"column_alias\":\"data_source_type\"},{\"column_expr\":\"driver\",\"column_alias\":\"driver\"},{\"column_expr\":\"url\",\"column_alias\":\"url\"},{\"column_expr\":\"username\",\"column_alias\":\"username\"},{\"column_expr\":\"concat(password,\'abc\')\",\"column_alias\":\"password\"}]','delete from t6 where username=\'zdh.params.username\'','2'),(5,'2020->db','54','HDFS','','/2020.csv','name,sex,age,job,addr','','{\"encoding\":\"GBK\"}','','53','JDBC','t7','t7','','[{\"column_expr\":\"name\",\"column_alias\":\"name\"},{\"column_expr\":\"sex\",\"column_alias\":\"sex\"},{\"column_expr\":\"age\",\"column_alias\":\"age\"},{\"column_expr\":\"job\",\"column_alias\":\"job\"},{\"column_expr\":\"addr\",\"column_alias\":\"addr\"}]','delete from t7','2'),(6,'HIVE1','53','JDBC','t7','','','name,sex,age,job,addr','','','56','HIVE','','hive_t7','','[{\"column_expr\":\"name\",\"column_alias\":\"name\"},{\"column_expr\":\"sex\",\"column_alias\":\"sex\"},{\"column_expr\":\"age\",\"column_alias\":\"age\"},{\"column_expr\":\"job\",\"column_alias\":\"job\"},{\"column_expr\":\"addr\",\"column_alias\":\"addr\"}]','','2'),(7,'BOC_SCHEMA->TXT','54','HDFS','','/BOC_SCHEMA.sql','TB_NAME,TB_CONTENT,FILE_TYPE,FILE_PATH,FILE_SEP,FILE_NAMES,IS_INCRE,SYSTEM_NAME,ENCODER_TYPE,SCHEMA,BATCH_ID,IS_ENABLE,UPDATE_DATE','','{\"sep\":\",\\\\$\"}','','54','HDFS','','/BOC_TMP','','[{\"column_expr\":\"TB_NAME\",\"column_alias\":\"TB_NAME\"},{\"column_expr\":\"TB_CONTENT\",\"column_alias\":\"TB_CONTENT\"},{\"column_expr\":\"FILE_TYPE\",\"column_alias\":\"FILE_TYPE\"},{\"column_expr\":\"FILE_PATH\",\"column_alias\":\"FILE_PATH\"},{\"column_expr\":\"FILE_SEP\",\"column_alias\":\"FILE_SEP\"},{\"column_expr\":\"FILE_NAMES\",\"column_alias\":\"FILE_NAMES\"},{\"column_expr\":\"IS_INCRE\",\"column_alias\":\"IS_INCRE\"},{\"column_expr\":\"SYSTEM_NAME\",\"column_alias\":\"SYSTEM_NAME\"},{\"column_expr\":\"ENCODER_TYPE\",\"column_alias\":\"ENCODER_TYPE\"},{\"column_expr\":\"SCHEMA\",\"column_alias\":\"SCHEMA\"},{\"column_expr\":\"BATCH_ID\",\"column_alias\":\"BATCH_ID\"},{\"column_expr\":\"IS_ENABLE\",\"column_alias\":\"IS_ENABLE\"},{\"column_expr\":\"UPDATE_DATE\",\"column_alias\":\"UPDATE_DATE\"}]','','2');
+
 drop table if EXISTS dispatch_task_info;
 create table dispatch_task_info(
 id int not null AUTO_INCREMENT,
@@ -59,6 +63,7 @@ etl_context varchar(100),
 PRIMARY KEY (id)
 );
 
+INSERT INTO `dispatch_task_info` VALUES (5,'我的第2个调度任务','2','我的第一个ETL任务',NULL,'2'),(6,'mydb.data_source_info -> csv','3','mydb.data_source_info -> csv',NULL,'2'),(7,'csv->mydb.t6','4','csv->mydb.t6','{\"zdh.params.username\":\"zyc\"}','2'),(8,'调度2020->db','5','2020->db','','2'),(9,'HIVE1','6','HIVE1','','2'),(10,'BOC_SCHEMA->TXT','7','BOC_SCHEMA->TXT','','2');
 
 drop table if EXISTS quartz_job_info;
 create table quartz_job_info(
@@ -86,8 +91,7 @@ owner varchar(100),
 PRIMARY key(job_id)
 );
 
-
-
+INSERT INTO `quartz_job_info` VALUES ('675001061114642432','fdfdsfd','SHELL','2020-01-27','2020-02-10','1','-1',7,' if [ ! -f \"/data/filename\" ];then echo \"文件不存在\"; else echo \"true\"; fi','',NULL,NULL,'2020-01-27','0/10 * * * * ? *','remove',NULL,NULL,NULL,'3','mydb.data_source_info -> csv','2'),('677259226690617344','第一个调度任务','SHELL','2019-01-01','2020-02-12','1','5',0,'command',NULL,NULL,NULL,NULL,'10s','pause',NULL,NULL,NULL,'1',NULL,NULL);
 
 
 
