@@ -11,6 +11,9 @@
   + 支持外部调度工具(需要修改,新增特定接口)
   + 弹性扩展(可单机,可集群)
   + 支持客户级权限
+  + 简单易用支持二次开发
+  + 自带简单调度工具,可配置定时任务,时间序列任务,设定次数
+  + 支持SHELL 命令检查文件 if [ ! -f "/dir1/file1" ];then echo "文件不存在"; else echo "true"; fi
  
 # 用到的技术体系
 
@@ -39,7 +42,11 @@
 # 运行
     在target 目录下找到zdh.jar
     执行 java  -Dfile.encoding=utf-8 -jar zdh.jar
-    
+   
+# 版本计划
+  1.1 计划支持HBASE 数据源
+  1.1 计划支持FTP 调度
+     
     
 
 # 提示
@@ -51,16 +58,18 @@
    
 # 界面预览   
 
-![login](img/login.jpg)
+![登陆界面](img/login.jpg)
 
-![sources](img/sources_list.jpg)
+![数据源界面](img/sources_list.jpg)
 
-![sources](img/sources_add.jpg)
+![增加数据源界面](img/sources_add.jpg)
 
-![etl](img/etl_list.jpg)
+![ETL任务界面](img/etl_list.jpg)
 
-![etl](img/etl_add.jpg)
+![ETL任务配置界面](img/etl_add.jpg)
 
-![dispatch](img/dispatch_list.jpg)
+![调度任务界面](img/dispatch_list.jpg)
+
+![调度任务配置界面](img/dispatch_add.jpg)
  
  
