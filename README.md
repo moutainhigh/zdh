@@ -1,3 +1,6 @@
+# 特色
+    开箱即用
+    
 # 主要功能
  zdh 主要的作用 是从hdfs,hive,jdbc 等数据源拉取数据,并转存到hdfs,hive,jdbc等其他数据源
  支持集群式部署
@@ -15,6 +18,18 @@
     后端：Springboot+shiro+redis+mybatis
     数据ETL引擎:Spark(hadoop,hive 可选择部署)
     
+# 下载修改基础配置
+
+    打开resources/application-dev.properties
+     1 修改服务器端口默认8080
+     2 修改数据源连接(默认支持mysql8),外部数据库必须引入
+     3 修改redis配置
+
+    创建需要的数据库配置
+     1 执行sql脚本db.sql
+     
+    依赖
+     1 必须提前安装redis 
 
 # 打包
     

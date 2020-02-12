@@ -1,3 +1,6 @@
+
+create database if NOT EXISTS mydb;
+
 drop table if EXISTS account_info;
 create table account_info(
 id int not null AUTO_INCREMENT,
