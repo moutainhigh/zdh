@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.zyc</groupId>
-    <artifactId>zspringboot</artifactId>
+    <artifactId>zdh</artifactId>
     <version>1.0-REALEASE</version>
     <packaging>jar</packaging>
 
-    <name>zspringboot</name>
+    <name>zdh</name>
     <description>Demo project for Spring Boot</description>
 
     <parent>
@@ -275,7 +275,7 @@
                     <fork>true</fork>
                     <!-- spring-boot:run 中文乱码解决 -->
                     <jvmArguments>-Dfile.encoding=UTF-8</jvmArguments>
-                    <mainClass>com.zyc.zspringboot.ZspringbootApplication</mainClass>
+                    <mainClass>com.zyc.zdh.ZdhApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>

@@ -24,7 +24,7 @@
             <property name="forceBigDecimals" value="false" />
         </javaTypeResolver>
         <!--生成Model类存放位置 -->
-        <javaModelGenerator targetPackage="com.zyc.zspringboot.entity"
+        <javaModelGenerator targetPackage="com.zyc.zdh.entity"
                             targetProject="src/main/java">
         </javaModelGenerator>
 
@@ -33,7 +33,7 @@
             和基于注解的Mapper对象 type="MIXEDMAPPER",生成基于注解的Java Model 和相应的Mapper对象 type="XMLMAPPER",生成SQLMap
             XML文件和独立的Mapper接口 -->
         <javaClientGenerator type="ANNOTATEDMAPPER"
-                             targetPackage="com.zyc.zspringboot.dao" targetProject="src/main/java">
+                             targetPackage="com.zyc.zdh.dao" targetProject="src/main/java">
             <property name="enableSubPackages" value="true" />
         </javaClientGenerator>
         <!--生成对应表及类名 -->
