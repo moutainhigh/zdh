@@ -44,8 +44,8 @@
     执行 java  -Dfile.encoding=utf-8 -jar zdh.jar
    
 # 版本计划
-  1.1 计划支持HBASE 数据源
-  1.1 计划支持FTP 调度
+  + 1.1 计划支持HBASE 数据源
+  + 1.1 计划支持FTP 调度
      
     
 
