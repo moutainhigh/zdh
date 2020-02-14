@@ -77,10 +77,12 @@ public class ShellJob {
 //                            replace("zdh.date.nodash", date_nodash).
 //                            replace("zdh.date", date).split(";"));
 
+                    logger.info("[SHELL] JOB ,COMMAND:"+quartzJobInfo.getCommand());
                     String result=CommandUtils.exeCommand(quartzJobInfo.getCommand().
                             replace("zdh.date.nodash", date_nodash).
                             replace("zdh.date", date));
-                    if( !result.equals("true")){
+                    logger.info("[SHELL] JOB ,执行结果:"+result.trim());
+                    if( !result.trim().contains("success")){
                         throw new Exception("文件不存在");
                     }
                 }
@@ -116,7 +118,7 @@ public class ShellJob {
 
             ZdhInfo zdhInfo = create_zhdInfo(quartzJobInfo, quartzJobMapper, etlTaskService, dataSourcesServiceImpl);
             try {
-                if(exe_status==false){
+                if(exe_status==true){
                     logger.info("[SHELL] JOB ,开始发送ETL处理请求");
                     HttpUtil.postJSON(url, JSON.toJSONString(zdhInfo));
                     ZdhLogs zdhLogs=new ZdhLogs();

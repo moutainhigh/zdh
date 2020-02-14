@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.zyc.zdh.dao.QuartzJobMapper;
 import com.zyc.zdh.entity.*;
+import com.zyc.zdh.job.ShellJob;
 import com.zyc.zdh.job.SnowflakeIdWorker;
 import com.zyc.zdh.quartz.QuartzManager2;
 import com.zyc.zdh.service.DataSourcesService;
@@ -370,12 +371,15 @@ public class ZdhController {
 
         debugInfo(quartzJobInfo);
 
-        String url = "http://127.0.0.1:60001/api/v1/zdh";
+       // String url = "http://127.0.0.1:60001/api/v1/zdh";
 
-        ZdhInfo zdhInfo = create_zhdInfo(quartzJobInfo);
+       // ZdhInfo zdhInfo = create_zhdInfo(quartzJobInfo);
 
         try {
-            HttpUtil.postJSON(url, JSON.toJSONString(zdhInfo));
+            QuartzJobInfo dti = quartzJobMapper.selectByPrimaryKey(quartzJobInfo.getJob_id());
+            if(dti.getJob_type().equals("SHELL")){
+                ShellJob.run(dti);
+            }
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -498,8 +502,9 @@ public class ZdhController {
 
     @RequestMapping(value = "/zhd_logs", produces = "text/html;charset=UTF-8")
     @ResponseBody
-    public String zhd_logs(String id, String start_time, String end_time) {
+    public String zhd_logs(String id, String start_time, String end_time,String del) {
         System.out.println("id:" + id + ",start_time:" + start_time + ",end_time:" + end_time);
+
 
         Timestamp ts_start = null;
         Timestamp ts_end = null;
@@ -513,6 +518,11 @@ public class ZdhController {
         } else {
             ts_end = Timestamp.valueOf("2999-01-01 00:00:00");
         }
+
+        if(del!=null && !del.equals("")){
+            zdhLogsService.deleteByTime(id, ts_start, ts_end);
+        }
+
 
         List<ZdhLogs> zhdLogs = zdhLogsService.selectByTime(id, ts_start, ts_end);
         Iterator<ZdhLogs> it = zhdLogs.iterator();

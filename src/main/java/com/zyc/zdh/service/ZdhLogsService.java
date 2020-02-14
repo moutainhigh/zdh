@@ -31,4 +31,6 @@ public interface ZdhLogsService {
 	public List<ZdhLogs> select(ZdhLogs zdhLogs);
 
 	public List<ZdhLogs> selectByTime(String etl_task_id, Timestamp start_time,Timestamp end_time);
+
+	public int deleteByTime(String id, Timestamp start_time,Timestamp end_time);
 }

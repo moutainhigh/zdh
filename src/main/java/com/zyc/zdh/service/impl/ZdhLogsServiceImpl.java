@@ -67,4 +67,9 @@ public class ZdhLogsServiceImpl implements ZdhLogsService {
     public List<ZdhLogs> selectByTime(String etl_task_id, Timestamp start_time, Timestamp end_time) {
         return zdhLogsMapper.selectByTime(etl_task_id,start_time,end_time);
     }
+
+    @Override
+    public int deleteByTime(String id, Timestamp start_time, Timestamp end_time) {
+        return zdhLogsMapper.deleteByTime(id,start_time,end_time);
+    }
 }

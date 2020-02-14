@@ -24,4 +24,8 @@ public interface ZdhLogsMapper extends BaseMapper<ZdhLogs> {
             @Result(column="msg",property="msg")
     })
     public List<ZdhLogs> selectByTime(@Param("etl_task_id") String etl_task_id, @Param("start_time") Timestamp start_time, @Param("end_time") Timestamp end_time);
+
+    @Delete("delete from zdh_logs where etl_task_id = #{etl_task_id} and log_time >=#{start_time}  and log_time <=#{end_time}")
+    public int deleteByTime(@Param("etl_task_id") String etl_task_id, @Param("start_time") Timestamp start_time, @Param("end_time") Timestamp end_time);
+
 }
