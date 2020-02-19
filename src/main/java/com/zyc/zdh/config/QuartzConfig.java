@@ -8,6 +8,7 @@ import javax.sql.DataSource;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -23,6 +24,19 @@ import com.zyc.zdh.quartz.MyJobFactory;
  */
 @Configuration
 public class QuartzConfig {
+
+
+	@Value("${spring.datasource.url2}")
+	private String dbUrl;
+
+	@Value("${spring.datasource.username2}")
+	private String username;
+
+	@Value("${spring.datasource.password2}")
+	private String password;
+
+	@Value("${spring.datasource.driver-class-name2}")
+	private String driverClassName;
 
 	@Autowired
 	Environment ev;
@@ -89,11 +103,11 @@ public class QuartzConfig {
 		prop.put("org.quartz.jobStore.useProperties", "true");
 
 		 prop.put("org.quartz.dataSource.quartzDataSource.driver",
-		 "com.mysql.cj.jdbc.Driver");
+		 driverClassName);
 		 prop.put("org.quartz.dataSource.quartzDataSource.URL",
-		 "jdbc:mysql://127.0.0.1:3306/quartz?serverTimezone=GMT%2B8");
-		 prop.put("org.quartz.dataSource.quartzDataSource.user", "zyc");
-		 prop.put("org.quartz.dataSource.quartzDataSource.password", "123456");
+				 dbUrl);
+		 prop.put("org.quartz.dataSource.quartzDataSource.user", username);
+		 prop.put("org.quartz.dataSource.quartzDataSource.password", password);
 		 prop.put("org.quartz.dataSource.quartzDataSource.maxConnections",
 		 "10");
 
