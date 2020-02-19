@@ -545,30 +545,6 @@ public class ZdhController {
     }
 
 
-    @RequestMapping("/layer")
-    public String getLayer() {
-
-        return "layer";
-    }
-
-
-    @RequestMapping("/form_basic")
-    public String getform_basic() {
-
-        return "form_basic";
-    }
-
-    @RequestMapping("/toastr_notifications")
-    public String gettoastr_notifications() {
-
-        return "toastr_notifications";
-    }
-
-    @RequestMapping("/graph_echarts")
-    public String graph_echarts() {
-
-        return "graph_echarts";
-    }
 
     @RequestMapping("/index_v1")
     public String index_v1() {
