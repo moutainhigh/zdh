@@ -123,6 +123,7 @@ msg text
 );
 
 
+create database if NOT EXISTS quartz;
 
 -- quartz
 DROP TABLE IF EXISTS QRTZ_FIRED_TRIGGERS;
