@@ -126,6 +126,14 @@
                                 <input id="plan_count" name="plan_count" type="text" value="-1"
                                        placeholder="计划执行次数,设置-1 代表限制" class="form-control" aria-required="true"> </span>
                             </div>
+                            </br>
+                            <label class="col-sm-2 control-label">重置已执行次数</label>
+                            <div class="col-sm-10">
+                                <div class="checkbox i-checks">
+                                    <label class="no-padding">
+                                        <input id="reset_count" name="reset_count" type="checkbox"><i></i> 选择重置</label>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -146,7 +154,7 @@
 
 
                         <div class="hr-line-dashed"></div>
-                        <!-- 输入数据源开始-->
+
 
                         <div class="form-group">
                             <label class="col-sm-2 control-label">其他参数</label>
@@ -447,11 +455,16 @@
             return false
         }
 
+        var count_str=""
+        if($('#reset_count').is(':checked')){
+            count_str="&count=0"
+        }
+
         $.ajax({
             type: 'POST',
             url: "dispatch_task_add",
             dataType: 'json',
-            data: $("#dispatch_task_add_form").serialize()+"&etl_context="+etl_context,
+            data: $("#dispatch_task_add_form").serialize()+"&etl_context="+etl_context+count_str,
             //发送数据前
             beforeSend: function () {
                 // 禁用按钮防止重复提交
@@ -512,13 +525,15 @@
             layer.msg("结束时间大于开始时间")
             return false
         }
-
-
+        var count_str=""
+        if($('#reset_count').is(':checked')){
+            count_str="&count=0"
+        }
         $.ajax({
             type: 'POST',
             url: "dispatch_task_update",
             dataType: 'json',
-            data: $("#dispatch_task_add_form").serialize()+"&etl_context="+etl_context+"&job_id="+s.id,
+            data: $("#dispatch_task_add_form").serialize()+"&etl_context="+etl_context+"&job_id="+s.id+count_str,
             //发送数据前
             beforeSend: function () {
                 // 禁用按钮防止重复提交

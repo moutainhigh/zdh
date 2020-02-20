@@ -20,14 +20,26 @@ public class DruidDataSourceConfig {
 	@Value("${spring.datasource.url}")
 	private String dbUrl;
 
+	@Value("${spring.datasource.url2}")
+	private String dbUrl2;
+
 	@Value("${spring.datasource.username}")
 	private String username;
+
+	@Value("${spring.datasource.username2}")
+	private String username2;
 
 	@Value("${spring.datasource.password}")
 	private String password;
 
+	@Value("${spring.datasource.password2}")
+	private String password2;
+
 	@Value("${spring.datasource.driver-class-name}")
 	private String driverClassName;
+
+	@Value("${spring.datasource.driver-class-name2}")
+	private String driverClassName2;
 
 	@Value("${spring.datasource.initialSize}")
 	private int initialSize;
@@ -102,10 +114,10 @@ public class DruidDataSourceConfig {
 	public DataSource dataSource2() {
 		// @Primary 注解作用是当程序选择dataSource时选择被注解的这个
 		DruidDataSource datasource = new DruidDataSource();
-		datasource.setUrl("jdbc:mysql://127.0.0.1:3306/quartz?serverTimezone=GMT%2B8&useSSL=false");
-		datasource.setUsername(username);
-		datasource.setPassword(password);
-		datasource.setDriverClassName(driverClassName);
+		datasource.setUrl(dbUrl2);
+		datasource.setUsername(username2);
+		datasource.setPassword(password2);
+		datasource.setDriverClassName(driverClassName2);
 		datasource.setInitialSize(initialSize);
 		datasource.setMinIdle(minIdle);
 		datasource.setMaxActive(maxActive);

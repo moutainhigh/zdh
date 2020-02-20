@@ -116,16 +116,19 @@
                                     id="btn_columns_file" type="button" class="btn btn-primary" οnsubmit='return false'>获取
                                    </button></span>
                                 </div>
+                                <span class="help-block m-b-none">配置JDBC数据源,选择表,之后点击[获取按钮]自动生成字段映射</span>
+                                <span class="help-block m-b-none">配置HDFS数据源,手动输入列字段,逗号分割,之后点击[获取按钮]自动生成字段映射</span>
                             </div>
                             <div class="col-sm-10" id="div_data_sources_table_columns">
                                 <div class="input-group">
                                     <input id="data_sources_table_columns" name="data_sources_table_columns" type="text" placeholder="配置选择的列逗号分割"
                                            aria-required="true" class="form-control"> <span class="input-group-btn"> <button
                                         id="btn_columns" type="button" class="btn btn-primary" οnsubmit='return false'>获取
-                                        </button> </span>
+                                        </button></span>
                                 </div>
+                                <span class="help-block m-b-none">配置JDBC数据源,选择表,之后点击[获取按钮]自动生成字段映射</span>
+                                <span class="help-block m-b-none">配置HDFS数据源,手动输入列字段,逗号分割,之后点击[获取按钮]自动生成字段映射</span>
                             </div>
-
                         </div>
                         <div class="hr-line-dashed"></div>
 
@@ -254,10 +257,11 @@
         <li>JDBC:</li>
         <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;空</li>
         <li>HDFS:</li>
-        <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    sep:分割符</li>
-        <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    fileType:文件类型</li>
-        <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    partitionBy:分区字段</li>
-        <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    model:文件写入模式,overwrite,append,errorifexists,ignore</li>
+        <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    sep:分割符,特殊字符需要转义,example:{"sep":"\\|"},{"sep","="}</li>
+        <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    fileType:文件类型,可选择parquet,orc,csv,json...,example {"fileType":"csv"}</li>
+        <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    partitionBy:分区字段,example {"partitionBy":"ETL_DATE"}</li>
+        <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    model:文件写入模式 默认append,overwrite,append,errorifexists,ignore,example {"model":"overwrite"}</li>
+        <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    encoding:文件编码 默认UTF-8,example {"encoding":"gbk"}</li>
         <li>HIVE:</li>
         <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;format:orc,parquet</li>
         <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;partitionBy:分区字段</li>
