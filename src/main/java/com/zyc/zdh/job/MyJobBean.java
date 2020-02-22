@@ -62,49 +62,10 @@ public class MyJobBean extends QuartzJobBean implements Serializable {
 
 			if(quartzJobInfo.getJob_type().equals("SHELL")){
 				ShellJob.run(quartzJobInfo);
+			}else if(quartzJobInfo.getJob_type().equals("JDBC")){
+				JdbcJob.run(quartzJobInfo);
 			}
 
-
-
-//			Date lastTime = dmTaskInfoTb.getLastUpdateTime();
-//			dmTaskInfoTb.setLastUpdateTime(currentTime);
-//			// 任务执行次数计算
-//			String cou = dmTaskInfoTb.getTaskCount();
-//			Long count = 0L;
-//			if (cou == null || cou.equals("")
-//					|| Long.valueOf(cou) == Long.MAX_VALUE) {
-//				count = 1L;
-//			} else {
-//				count = Long.valueOf(cou) + 1;
-//			}
-//			dmTaskInfoTb.setTaskCount(count.toString());
-//			// 更新任务到数据库
-//			dmTaskInfoTb.setTaskStatus("runing");
-//			int result = dmTaskInfoTbMapper.updateByPrimaryKey(dmTaskInfoTb);
-			//Thread.sleep(1000);
-//			logger.info("{}", result);
-
-			//获取任务信息 判断 执行那个
-
-
-
-			// 获取规则服务
-			// DimCheckedTablesInfoTbService ruleInfoService =
-			// (DimCheckedTablesInfoTbService) SpringContextService
-			// .getBean("dimCheckedTablesInfoTbService");
-			//
-			// @SuppressWarnings("rawtypes")
-			// IDataNormProcessor dataNormProcessor = new ProcessorFactory()
-			// .getgetProcessor(taskInfoTb.getTaskTablename());
-			// dataNormProcessor.getDataNormContext().setTableName(
-			// taskInfoTb.getTaskTablename());// tablename
-			// dataNormProcessor.getDataNormContext().setDimNormDataList(// 规则
-			// ruleInfoService.getNormInfoByTableName(taskInfoTb
-			// .getTaskTablename()));
-			// dataNormProcessor.getDataNormContext().setDataList(// 数据
-			// new ScanData().getScanData(taskInfoTb.getTaskTablename(),
-			// lastTime, currentTime));
-			// dataNormProcessor.alarmDetection();// 告警
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}

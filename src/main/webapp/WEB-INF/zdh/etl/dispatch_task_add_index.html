@@ -72,6 +72,7 @@
                                         class="chosen-select form-control m-b" tabindex="2">
                                     <option value="" mytype=""></option>
                                     <option value="SHELL" mytype="">SHELL</option>
+                                    <option value="JDBC" mytype="">JDBC</option>
                                     <option value="FTP" mytype="">FTP</option>
                                     <option value="CLASS" mytype="">CLASS</option>
                                 </select>
@@ -137,10 +138,10 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="col-sm-2 control-label">SHELL命令</label>
+                            <label class="col-sm-2 control-label">任务命令</label>
                             <div class="col-sm-10">
                                 <input id="command" name="command" type="text"
-                                       placeholder="SHELL命令" class="form-control" aria-required="true"> </span>
+                                       placeholder="SHELL命令,JDBC命令" class="form-control" aria-required="true"> </span>
                             </div>
                         </div>
 
@@ -193,6 +194,24 @@
     </div>
 </div>
 
+<div  id="dispath_params" class="ibox-content" style="display: none;">
+    <p>调度参数api</p>
+    <ul>
+        <li>在此处配置动态日期
+            </br>日期参数zdh.date => yyyy-MM-dd 模式
+            </br>日期参数zdh.date.nodash=> yyyyMMdd 模式
+        </li>
+
+        <li>任务类型选择JDBC 时必须配置 url,driver,username,password基础信息
+        </br>example:
+            </br> {"zdh.jdbc.url":"jdbc:mysql://127.0.0.1:3306/mydb?serverTimezone=GMT%2B8&useSSL=false"}
+            </br> {"zdh.jdbc.driver":"com.mysql.cj.jdbc.Driver"}
+            </br> {"zdh.jdbc.username":"zyc"}
+            </br> {"zdh.jdbc.password":"123456"}
+        </li>
+
+    </ul>
+</div>
 
 <!-- 全局js -->
 <script src="js/jquery.min.js?v=2.1.4"></script>
@@ -418,8 +437,9 @@
             type: 1,
             shade: false,
             title: false, //不显示标题
-            area:["30%","40%"],
-            content: $('#data_sources_params'), //捕获的元素
+            closeBtn: 1,
+            area:["50%","60%"],
+            content: $('#dispath_params'), //捕获的元素
             cancel: function(index){
                 layer.close(index);
                 //this.content.show();
@@ -553,7 +573,7 @@
             //报错
             error: function (data) {
                 $("#update_dispatch_task").removeAttr('disabled');
-                //layer.error(data.responseText);
+                layer.msg(data.responseText);
                 console.info("error: " + data.responseText);
             }
         });

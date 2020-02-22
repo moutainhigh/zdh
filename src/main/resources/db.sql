@@ -76,7 +76,7 @@ job_model VARCHAR(2),
 plan_count VARCHAR(5),
 count int,
 command VARCHAR(100),
-params VARCHAR(100),
+params text,
 last_status VARCHAR(100),
 last_time date,
 next_time date,
@@ -117,7 +117,7 @@ PRIMARY KEY (TASK_ID)
 
 drop TABLE if EXISTS zdh_logs;
 create table zdh_logs(
-etl_task_id VARCHAR(100),
+job_id VARCHAR(100),
 log_time TIMESTAMP ,
 msg text
 );

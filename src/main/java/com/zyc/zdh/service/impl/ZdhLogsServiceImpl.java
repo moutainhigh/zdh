@@ -19,7 +19,7 @@ public class ZdhLogsServiceImpl implements ZdhLogsService {
     @Override
     public ZdhLogs selectById(String id) {
         ZdhLogs zdhLogs=new ZdhLogs();
-        zdhLogs.setEtl_task_id(id);
+        zdhLogs.setJob_id(id);
         return zdhLogsMapper.selectByPrimaryKey(zdhLogs);
     }
 
@@ -64,8 +64,8 @@ public class ZdhLogsServiceImpl implements ZdhLogsService {
     }
 
     @Override
-    public List<ZdhLogs> selectByTime(String etl_task_id, Timestamp start_time, Timestamp end_time) {
-        return zdhLogsMapper.selectByTime(etl_task_id,start_time,end_time);
+    public List<ZdhLogs> selectByTime(String job_id, Timestamp start_time, Timestamp end_time) {
+        return zdhLogsMapper.selectByTime(job_id,start_time,end_time);
     }
 
     @Override

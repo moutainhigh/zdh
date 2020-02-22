@@ -59,7 +59,46 @@ public class DBUtil{
      * 查询数据库的方法
      * @param sql        字符串，要执行的sql语句  如果其中有变量的话，就用  ‘"+变量+"’
      */
-    public List<String> R(String driver,String url,String username,String password,String sql, Object ...args){
+    public List<String> R(String driver,String url,String username,String password,String sql, Object ...args) throws Exception{
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = getConnection(driver,url,username,password);
+            preparedStatement = connection.prepareStatement(sql);
+            if(args !=null){
+                for (int i = 0; i < args.length; i++) {
+                    preparedStatement.setObject(i+1, args[i]);
+                }
+            }
+            resultSet = preparedStatement.executeQuery();
+
+            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+            int columnCount = resultSetMetaData.getColumnCount();
+            List<String> result=new ArrayList<String>();
+            while(resultSet.next()!=false){
+                //这里可以执行一些其他的操作
+                for (int i = 1; i <= columnCount; i++) {
+                    System.out.println(resultSet.getString(i));
+                }
+                result.add(resultSet.getString(1));
+            }
+
+
+           return result;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }finally {
+            release(connection, preparedStatement, resultSet);
+        }
+    }
+
+    /**
+     * 查询数据库的方法
+     * @param sql        字符串，要执行的sql语句  如果其中有变量的话，就用  ‘"+变量+"’
+     */
+    public List<String> R2(String driver,String url,String username,String password,String sql, Object ...args){
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -83,7 +122,7 @@ public class DBUtil{
             }
 
 
-           return result;
+            return result;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -91,6 +130,7 @@ public class DBUtil{
             release(connection, preparedStatement, resultSet);
         }
     }
+
     /**
      * 数据库记录增删改的方法
      * @param sql        字符串，要执行的sql语句  如果其中有变量的话，就用  ‘"+变量+"’

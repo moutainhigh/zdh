@@ -5,19 +5,19 @@ import java.sql.Timestamp;
 
 public class ZdhLogs  extends PageBase implements Serializable {
 
-    private String etl_task_id;
+    private String job_id;
 
     private Timestamp log_time;
 
     private String msg;
 
 
-    public String getEtl_task_id() {
-        return etl_task_id;
+    public String getJob_id() {
+        return job_id;
     }
 
-    public void setEtl_task_id(String etl_task_id) {
-        this.etl_task_id = etl_task_id;
+    public void setJob_id(String job_id) {
+        this.job_id = job_id;
     }
 
     public Timestamp getLog_time() {

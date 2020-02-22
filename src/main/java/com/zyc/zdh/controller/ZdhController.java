@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.zyc.zdh.dao.QuartzJobMapper;
 import com.zyc.zdh.entity.*;
+import com.zyc.zdh.job.JdbcJob;
 import com.zyc.zdh.job.ShellJob;
 import com.zyc.zdh.job.SnowflakeIdWorker;
 import com.zyc.zdh.quartz.QuartzManager2;
@@ -202,21 +203,26 @@ public class ZdhController {
         String url = dataSourcesInfo.getUrl();
 
 
-        if (url.toLowerCase().contains("jdbc:oracle")) {
+        try{
+            if (url.toLowerCase().contains("jdbc:oracle")) {
 
-            List<String> list = new DBUtil().R(dataSourcesInfo.getDriver(), dataSourcesInfo.getUrl(), dataSourcesInfo.getUsername(), dataSourcesInfo.getPassword(),
-                    "SELECT TABLE_NAME FROM USER_TABLES");
-            return JSON.toJSONString(list);
-        } else if (url.toLowerCase().contains("jdbc:mysql") || url.toLowerCase().contains("jdbc:mariadb")) {
-            List<String> list = new DBUtil().R(dataSourcesInfo.getDriver(), dataSourcesInfo.getUrl(), dataSourcesInfo.getUsername(), dataSourcesInfo.getPassword(),
-                    "SELECT table_name FROM information_schema.TABLES where table_schema=?", tableSchema(dataSourcesInfo.getUrl()));
+                List<String> list = new DBUtil().R(dataSourcesInfo.getDriver(), dataSourcesInfo.getUrl(), dataSourcesInfo.getUsername(), dataSourcesInfo.getPassword(),
+                        "SELECT TABLE_NAME FROM USER_TABLES");
+                return JSON.toJSONString(list);
+            } else if (url.toLowerCase().contains("jdbc:mysql") || url.toLowerCase().contains("jdbc:mariadb")) {
+                List<String> list = new DBUtil().R(dataSourcesInfo.getDriver(), dataSourcesInfo.getUrl(), dataSourcesInfo.getUsername(), dataSourcesInfo.getPassword(),
+                        "SELECT table_name FROM information_schema.TABLES where table_schema=?", tableSchema(dataSourcesInfo.getUrl()));
 
-            return JSON.toJSONString(list);
-        } else if (url.toLowerCase().contains("jdbc:postgresql")) {
+                return JSON.toJSONString(list);
+            } else if (url.toLowerCase().contains("jdbc:postgresql")) {
 
-        } else if (url.toLowerCase().contains("jdbc:hive2")) {
+            } else if (url.toLowerCase().contains("jdbc:hive2")) {
 
+            }
+        }catch (Exception ex){
+            ex.printStackTrace();
         }
+
 
         return "";
     }
@@ -251,20 +257,23 @@ public class ZdhController {
 
         String url = dataSourcesInfo.getUrl();
 
+        try{
+            if (url.toLowerCase().contains("jdbc:oracle")) {
 
-        if (url.toLowerCase().contains("jdbc:oracle")) {
+                List<String> list = new DBUtil().R(dataSourcesInfo.getDriver(), dataSourcesInfo.getUrl(), dataSourcesInfo.getUsername(), dataSourcesInfo.getPassword(),
+                        "select COLUMN_NAME from user_tab_columns WHERE TABLE_NAME = ?", table_name);
+                return JSON.toJSONString(list);
+            } else if (url.toLowerCase().contains("jdbc:mysql") || url.toLowerCase().contains("jdbc:mariadb")) {
+                List<String> list = new DBUtil().R(dataSourcesInfo.getDriver(), dataSourcesInfo.getUrl(), dataSourcesInfo.getUsername(), dataSourcesInfo.getPassword(),
+                        "select COLUMN_NAME from information_schema.COLUMNS where table_name = ?", table_name);
 
-            List<String> list = new DBUtil().R(dataSourcesInfo.getDriver(), dataSourcesInfo.getUrl(), dataSourcesInfo.getUsername(), dataSourcesInfo.getPassword(),
-                    "select COLUMN_NAME from user_tab_columns WHERE TABLE_NAME = ?", table_name);
-            return JSON.toJSONString(list);
-        } else if (url.toLowerCase().contains("jdbc:mysql") || url.toLowerCase().contains("jdbc:mariadb")) {
-            List<String> list = new DBUtil().R(dataSourcesInfo.getDriver(), dataSourcesInfo.getUrl(), dataSourcesInfo.getUsername(), dataSourcesInfo.getPassword(),
-                    "select COLUMN_NAME from information_schema.COLUMNS where table_name = ?", table_name);
+                return JSON.toJSONString(list);
+            } else if (url.toLowerCase().contains("jdbc:postgresql")) {
 
-            return JSON.toJSONString(list);
-        } else if (url.toLowerCase().contains("jdbc:postgresql")) {
+            } else if (url.toLowerCase().contains("jdbc:hive2")) {
 
-        } else if (url.toLowerCase().contains("jdbc:hive2")) {
+            }
+        }catch (Exception ex){
 
         }
 
@@ -379,6 +388,10 @@ public class ZdhController {
             QuartzJobInfo dti = quartzJobMapper.selectByPrimaryKey(quartzJobInfo.getJob_id());
             if(dti.getJob_type().equals("SHELL")){
                 ShellJob.run(dti);
+            }else if(dti.getJob_type().equals("FTP")){
+
+            }else if(dti.getJob_type().equals("JDBC")){
+                JdbcJob.run(dti);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -529,7 +542,7 @@ public class ZdhController {
         StringBuilder sb = new StringBuilder();
         while (it.hasNext()) {
             ZdhLogs next = it.next();
-            String info = "任务ID:" + next.getEtl_task_id() + ",任务执行时间:" + next.getLog_time().toString() + ",日志:" + next.getMsg();
+            String info = "任务ID:" + next.getJob_id() + ",任务执行时间:" + next.getLog_time().toString() + ",日志:" + next.getMsg();
             sb.append(info + "\r\n");
         }
 
