@@ -99,7 +99,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label">过滤条件</label>
                             <div class="col-sm-10" id="div_data_sources_filter_input">
-                                <textarea id="data_sources_filter_input" name="data_sources_filter_input" class="form-control" rows="2" placeholder="过滤条件,使用sql语法 example: name='zyc' and sex='man' "></textarea>
+                                <textarea id="data_sources_filter_input" name="data_sources_filter_input" class="form-control" rows="2" placeholder="过滤条件,使用sql语法 example: name='zyc' and sex='man' ,如果是hbase数据源直接输入start_row_key,end_row_key 通过逗号分割 example: 001,100"></textarea>
                             </div>
                         </div>
 
@@ -219,7 +219,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label">清空条件</label>
                             <div class="col-sm-10" id="div_data_sources_clear_output">
-                                <textarea id="data_sources_clear_output" name="data_sources_clear_output" class="form-control" rows="2" placeholder="清空条件,使用sql语法 example: delete from user where etl_date=2019-12-01"></textarea>
+                                <textarea id="data_sources_clear_output" name="data_sources_clear_output" class="form-control" rows="2" placeholder="清空条件,使用sql语法 example: delete from user where etl_date=2019-12-01,如果是hbase数据源直接输入start_row_key,end_row_key 通过逗号分割 example: 001,100"></textarea>
                             </div>
                         </div>
 

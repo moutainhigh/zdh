@@ -1,5 +1,9 @@
 # 特色
     开箱即用
+    支持多数据源
+    单独的调度器,调度也可和三方调度器对接airflow,azkaban
+    二次开发
+   
     
 # 主要功能
  zdh 主要的作用 是从hdfs,hive,jdbc 等数据源拉取数据,并转存到hdfs,hive,jdbc等其他数据源
@@ -14,6 +18,26 @@
   + 简单易用支持二次开发
   + 自带简单调度工具,可配置定时任务,时间序列任务,设定次数
   + 支持SHELL 命令检查文件 if [ ! -f "/dir1/file1" ];then echo "文件不存在"; else echo "true"; fi
+ 
+ # 支持的数据源
+   + hive
+   + hdfs
+   + jdbc (所有的jdbc,包含特殊jdbc如hbase-phoenix,hive-jdbc,spark-jdbc)
+   + hbase
+   + kafka(暂未支持)
+
+# 支持的调度对象
+   + shell 命令
+   + 数据库查询
+   + 特色开发jar
+   
+# 支持的调度器模式
+   + 时间序列(时间限制,次数限制)
+   + 单次执行
+   + 重复执行(次数限制,时间限制)
+   
+# 支持调度动态日期参数   
+   
  
 # 用到的技术体系
 
@@ -44,9 +68,9 @@
     执行 java  -Dfile.encoding=utf-8 -jar zdh.jar
    
 # 版本计划
-  + 1.1 计划支持HBASE 数据源
   + 1.1 计划支持FTP 调度
-     
+  + 1.1 增加任务复制功能-快速配置任务
+  + 1.1 docker 部署   
     
 
 # 提示
