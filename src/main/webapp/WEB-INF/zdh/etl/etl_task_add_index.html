@@ -353,7 +353,7 @@
                             $('#data_source_type_input').val($('#data_sources_choose_input').find("option:selected").attr("mytype"));
                             $("#data_sources_choose_input").trigger("chosen:updated");
                             if ($('#data_sources_choose_input').find("option:selected").attr("mytype") == 'JDBC') {
-                                alert("==========="+$('#data_sources_choose_input').val())
+                                //alert("==========="+$('#data_sources_choose_input').val())
                                 init_table_name($('#data_sources_choose_input').val());
 
                                 $('#div_data_sources_file_name_input')[0].style.display='none';
@@ -484,7 +484,7 @@
                         for (var i = 0; i < data.length; i++) {
                             str += '<option value=\"' + data[i] + '\" hassubinfo=\"true\">' + data[i] + '</option>'
                         }
-                        alert("fafafa"+str)
+                        //alert("fafafa"+str)
                         $('#data_sources_table_name_input').html(str);
                         $("#data_sources_table_name_input").trigger("chosen:updated");
                         $('#data_sources_table_name_input').chosen();
