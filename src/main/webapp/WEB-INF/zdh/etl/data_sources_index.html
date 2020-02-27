@@ -105,6 +105,7 @@
                                 <select class="form-control m-b" data-live-search="true" name="data_source_type" id="data_source_type">
                                     <option>JDBC</option>
                                     <option>HDFS</option>
+                                    <option>HBASE</option>
                                     <option>HIVE</option>
                                     <option>KAFKA</option>
                                 </select>
@@ -226,10 +227,12 @@
             },
             //处理完成
             complete: function () {
+                $("#update_zdh").removeAttr('disabled');
                 console.info("complete")
             },
             //报错
             error: function (data) {
+                layer.msg(data.responseText)
                 console.info("error: " + data.responseText);
             }
         });

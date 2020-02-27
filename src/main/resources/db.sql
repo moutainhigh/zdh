@@ -1,6 +1,7 @@
 
 create database if NOT EXISTS mydb;
 
+use mydb;
 drop table if EXISTS account_info;
 create table account_info(
 id int not null AUTO_INCREMENT,
@@ -125,6 +126,7 @@ msg text
 
 create database if NOT EXISTS quartz;
 
+use quartz;
 -- quartz
 DROP TABLE IF EXISTS QRTZ_FIRED_TRIGGERS;
 DROP TABLE IF EXISTS QRTZ_PAUSED_TRIGGER_GRPS;

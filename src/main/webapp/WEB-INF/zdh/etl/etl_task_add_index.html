@@ -118,6 +118,7 @@
                                 </div>
                                 <span class="help-block m-b-none">配置JDBC数据源,选择表,之后点击[获取按钮]自动生成字段映射</span>
                                 <span class="help-block m-b-none">配置HDFS数据源,手动输入列字段,逗号分割,之后点击[获取按钮]自动生成字段映射</span>
+                                <span class="help-block m-b-none">配置HBASE数据源,手动输入列字段格式 列族:列名,逗号分割,之后点击[获取按钮]自动生成字段映射</span>
                             </div>
                             <div class="col-sm-10" id="div_data_sources_table_columns">
                                 <div class="input-group">
@@ -128,6 +129,7 @@
                                 </div>
                                 <span class="help-block m-b-none">配置JDBC数据源,选择表,之后点击[获取按钮]自动生成字段映射</span>
                                 <span class="help-block m-b-none">配置HDFS数据源,手动输入列字段,逗号分割,之后点击[获取按钮]自动生成字段映射</span>
+                                <span class="help-block m-b-none">配置HBASE数据源,手动输入列字段格式 列族:列名,逗号分割,之后点击[获取按钮]自动生成字段映射</span>
                             </div>
                         </div>
                         <div class="hr-line-dashed"></div>
@@ -310,12 +312,13 @@
             var url = location.search; //这一条语句获取了包括问号开始到参数的最后，不包括前面的路径
             var params = url.substr(1);//去掉问号
             var pa = params.split("&");
-            var s = new Object();
+            var s = new Object();//定义一个全局变量-存储任务ID
             for(var i = 0; i < pa.length; i ++){
                 s[pa[i].split("=")[0]] = unescape(pa[i].split("=")[1]);
             }
 
 
+            //定义特定数据源展示的div
             function fileShow() {
                 console.info("fileShow")
                 $('#div_data_sources_table_name_input')[0].style.display='none';
@@ -329,12 +332,13 @@
             }
 
 
-            //初始化数据源
+            //初始化数据源--把所有数据源都加载到下拉框
             function init_data_sources(){
                 $.ajax({
                     type: 'POST',
                     url: "data_sources_list",
                     dataType: 'json',
+                    async: false,
                     data: '',
                     //成功返回
                     success: function (data) {
@@ -342,12 +346,14 @@
                         for (var i = 0; i < data.length; i++) {
                             str += '<option value=\"' + data[i].id + "\" mytype=\"" + data[i].data_source_type + "\" hassubinfo=\"true\">" + data[i].data_source_context + "</option>"
                         }
+                        //输入数据源类型下拉框
                         $('#data_sources_choose_input').html(str);
                         $('#data_sources_choose_input').chosen().on("change", function (evt, params) {
                             // alert($('#data_sources_choose_input').val())
                             $('#data_source_type_input').val($('#data_sources_choose_input').find("option:selected").attr("mytype"));
                             $("#data_sources_choose_input").trigger("chosen:updated");
                             if ($('#data_sources_choose_input').find("option:selected").attr("mytype") == 'JDBC') {
+                                alert("==========="+$('#data_sources_choose_input').val())
                                 init_table_name($('#data_sources_choose_input').val());
 
                                 $('#div_data_sources_file_name_input')[0].style.display='none';
@@ -367,6 +373,7 @@
                             }
                         });
 
+                        //输出数据源类型下拉框
                         $('#data_sources_choose_output').html(str);
 
                         $('#data_sources_choose_output').chosen().on("change", function (evt, params) {
@@ -413,6 +420,7 @@
                     type: 'POST',
                     url: "etl_task_schema",
                     dataType: 'json',
+                    async: false,
                     data: postData,
                     //成功返回
                     success: function (data) {
@@ -436,6 +444,7 @@
                     },
                     //报错
                     error: function (data) {
+                        layer.msg(data.responseText)
                         console.info("error: " + data.responseText);
                     }
                 });
@@ -458,6 +467,7 @@
             //根据数据源id 获取对应的tables
             function init_table_name(id) {
 
+                alert("datasourceid:"+id)
                 var postData = {
                     id: id,
                 }
@@ -465,6 +475,7 @@
                     type: 'POST',
                     url: "etl_task_tables",
                     dataType: 'json',
+                    async:false,
                     data: postData,
                     //成功返回
                     success: function (data) {
@@ -473,6 +484,7 @@
                         for (var i = 0; i < data.length; i++) {
                             str += '<option value=\"' + data[i] + '\" hassubinfo=\"true\">' + data[i] + '</option>'
                         }
+                        alert("fafafa"+str)
                         $('#data_sources_table_name_input').html(str);
                         $("#data_sources_table_name_input").trigger("chosen:updated");
                         $('#data_sources_table_name_input').chosen();
@@ -529,20 +541,9 @@
 
             }
 
-            //启动数据源select 初始化函数
-            init_data_sources();
-            //s.id=-1 表示新增,否则表示更新
-            if(s.id==-1){
-                $('#data_sources_table_name_input').chosen();
-                $('#data_sources_table_name_output').chosen();
-                $('#update_etl_task').hide()
-                $('#save_etl_task').show()
-            }else{
-                $('#save_etl_task').hide()
-                $('#update_etl_task').show()
-            }
 
-            fileShow()
+
+
 
             // ------------------------------------------------------------------
 
@@ -607,8 +608,7 @@
                     $element.attr('contenteditable', true);
                     $element.blur(function() {
                         var index = $element.parent().data('index');
-                        var tdValue = $element.html();
-
+                        var tdValue = $element.html().replace("<br>","");
                         saveData(index, field, tdValue);
                     })
                 }
@@ -622,200 +622,223 @@
                 })
             }
 
-
-
-            if(s.id !='-1'){
-                console.info("edit page.....")
-                //开始赋值
-
-                $.ajax({
-                    url : "etl_task_list",
-                    data : "ids=" + s.id,
-                    type : "post",
-                    dataType : "json",
-                    success : function(data) {
-                        console.info("success")
-                       // layer.alert(JSON.stringify(data[0]))
-
-                        //获取输入数据源id
-                        var data_sources_choose_input=data[0].data_sources_choose_input
-
-                        //获取ETL 说明
-                        var etl_context=data[0].etl_context
-                        $("#etl_context").val(etl_context);
-
-                        //初始化输入数据源select 组件
-                        $("#data_sources_choose_input").val(data_sources_choose_input)
-                        $("#data_sources_choose_input").trigger("chosen:updated");
-
-                        //获取输入数据源类型
-                        var data_source_type_input=data[0].data_source_type_input
-                        $("#data_source_type_input").val(data_source_type_input)
-
-                        //获取输入源数据其他参数
-                        var data_sources_params_input=data[0].data_sources_params_input
-                        $("#data_sources_params_input").val(data_sources_params_input)
-
-                        //获取表名/文件名
-                        if(data_source_type_input=="JDBC"){
-                            //获取表名
-                            var data_sources_table_name_input=data[0].data_sources_table_name_input;
-                            //初始化数据源对应的表
-                            var postData={
-                                id:data_sources_choose_input
-                            }
-
-                            $.ajax({
-                                type: 'POST',
-                                url: "etl_task_tables",
-                                dataType: 'json',
-                                data: postData,
-                                //成功返回
-                                success: function (data_table) {
-
-                                    var str = '<option value=\"\" hassubinfo=\"true\"></option>'
-                                    for (var i = 0; i < data_table.length; i++) {
-                                        str += '<option value=\"' + data_table[i] + '\" hassubinfo=\"true\">' + data_table[i] + '</option>'
-                                    }
-                                    $('#data_sources_table_name_input').html(str);
-                                    $("#data_sources_table_name_input").trigger("chosen:updated");
-                                    $('#data_sources_table_name_input').chosen();
-
-                                    $('#data_sources_table_name_input').val(data_sources_table_name_input);
-                                    $("#data_sources_table_name_input").trigger("chosen:updated");
-                                },
-                                //处理完成
-                                complete: function () {
-                                    console.info("complete")
-                                },
-                                //报错
-                                error: function (data_table) {
-                                    console.info("error: " + data_table.responseText);
-                                }
-                            });
-                            $('#div_data_sources_file_name_input')[0].style.display='none';
-                            $('#div_data_sources_file_columns')[0].style.display='none';
-
-                            $('#div_data_sources_table_name_input')[0].style.display='block';
-                            //表字段
-                            $('#div_data_sources_table_columns')[0].style.display='block';
-
-
-                        }
-                        else{
-                            var data_sources_file_name_input=data[0].data_sources_file_name_input
-                            $('#data_sources_file_name_input').val(data_sources_file_name_input)
-                        }
-
-                        //获取过滤条件
-                        var data_sources_filter_input=data[0].data_sources_filter_input
-                        $('#data_sources_filter_input').val(data_sources_filter_input)
-
-                        //获取 配置选择的列
-                        if(data_source_type_input=="JDBC"){
-                            var data_sources_table_columns=data[0].data_sources_table_columns
-                            $('#data_sources_table_columns').val(data_sources_table_columns)
-                        }else{
-                            var data_sources_file_columns=data[0].data_sources_file_columns
-                            $('#data_sources_file_columns').val(data_sources_file_columns)
-                        }
-
-
-                        //获取配置 对应的table 中配置
-                        var column_datas=data[0].column_datas
-                        var cd=JSON.parse(column_datas)
-                        for(var i=0;i<cd.length;i++){
-                            var index = $('#exampleTableEvents').bootstrapTable('getData').length;
-                            $('#exampleTableEvents').bootstrapTable('insertRow',{index:index,
-                                row:{column_expr:cd[i].column_expr,column_alias:cd[i].column_alias}});
-                        }
-
-
-                        // 获取输出数据源
-                        var data_sources_choose_output=data[0].data_sources_choose_output
-                        //初始化输入数据源select 组件
-                        $("#data_sources_choose_output").val(data_sources_choose_output);
-                        $("#data_sources_choose_output").trigger("chosen:updated");
-
-                        //获取输出数据源类型
-                        var data_source_type_output=data[0].data_source_type_output
-                        $("#data_source_type_output").val(data_source_type_output)
-
-                        //获取输入源数据其他参数
-                        var data_sources_params_output=data[0].data_sources_params_output
-                        $("#data_sources_params_output").val(data_sources_params_output)
-
-                        //获取输出数据源表名
-                        var data_sources_table_name_output=data[0].data_sources_table_name_output;
-                        var data_sources_file_name_output=data[0].data_sources_file_name_output
-
-                        if(data_source_type_output=="JDBC"){
-
-                            $('#data_sources_file_name_output').val(data_sources_file_name_output)
-
-                            //初始化数据源对应的表
-                            var postData={
-                                id:data_sources_choose_output
-                            }
-
-                            $.ajax({
-                                type: 'POST',
-                                url: "etl_task_tables",
-                                dataType: 'json',
-                                data: postData,
-                                //成功返回
-                                success: function (data_table) {
-
-                                    var str = '<option value=\"\" hassubinfo=\"true\"></option>'
-                                    for (var i = 0; i < data_table.length; i++) {
-                                        str += '<option value=\"' + data_table[i] + '\" hassubinfo=\"true\">' + data_table[i] + '</option>'
-                                    }
-                                    $('#data_sources_table_name_output').html(str);
-                                    $("#data_sources_table_name_output").trigger("chosen:updated");
-                                    $('#data_sources_table_name_output').chosen();
-
-                                    //表名再数据源中匹配不到,说明是自己添加的
-                                    if(str.search(data_sources_table_name_output) == -1){
-                                        check_tb_name()
-                                    }
-                                    $('#data_sources_table_name_output').val(data_sources_table_name_output);
-                                    $("#data_sources_table_name_output").trigger("chosen:updated");
-                                },
-                                //处理完成
-                                complete: function () {
-                                    console.info("complete")
-                                },
-                                //报错
-                                error: function (data_table) {
-                                    console.info("error: " + data_table.responseText);
-                                }
-                            });
-
-                            $('#div_data_sources_table_name_output')[0].style.display='block';
-                            $('#div_data_sources_file_name_output')[0].style.display='block';
-
-                        }else{
-
-                            $('#data_sources_file_name_output').val(data_sources_file_name_output)
-                            $('#div_data_sources_table_name_output')[0].style.display='none';
-                            $('#div_data_sources_file_name_output')[0].style.display='block';
-                        }
-
-                        //获取输出删除条件
-                        var data_sources_clear_output=data[0].data_sources_clear_output;
-                        $('#data_sources_clear_output').val(data_sources_clear_output)
-
-
-
-                    },
-                    error: function (data) {
-                        console.info("error: " + data.responseText);
-                    }
-
-                });
-
-
+            fileShow()
+            //启动数据源select 初始化函数
+            init_data_sources();
+            //s.id=-1 表示新增,否则表示更新
+            if(s.id==-1){
+                console.info("新增按钮触发")
+                $('#data_sources_table_name_input').chosen();
+                $('#data_sources_table_name_output').chosen();
+                $('#update_etl_task').hide()
+                $('#save_etl_task').show()
+            }else{
+                console.info("更新按钮触发")
+                //init_table_name(s.id)
+                $('#save_etl_task').hide()
+                $('#update_etl_task').show()
+                buildParam()
             }
+
+            function  buildParam(){
+                if(s.id !='-1'){
+                    console.info("更新按钮触发--开始赋值对应参数")
+                    //开始赋值
+
+                    $.ajax({
+                        url : "etl_task_list",
+                        data : "ids=" + s.id,
+                        type : "post",
+                        async: false,
+                        dataType : "json",
+                        success : function(data) {
+                            console.info("success")
+                            // layer.alert(JSON.stringify(data[0]))
+
+                            //获取输入数据源id
+                            var data_sources_choose_input=data[0].data_sources_choose_input
+                            console.info("参数赋值:输入数据源id:"+data_sources_choose_input)
+
+
+                            //获取ETL 说明
+                            var etl_context=data[0].etl_context
+                            $("#etl_context").val(etl_context);
+
+                            //初始化输入数据源select 组件
+                            $("#data_sources_choose_input").val(data_sources_choose_input)
+                            $("#data_sources_choose_input").trigger("chosen:updated");
+
+                            //获取输入数据源类型
+                            var data_source_type_input=data[0].data_source_type_input
+                            $("#data_source_type_input").val(data_source_type_input)
+
+                            //获取输入源数据其他参数
+                            var data_sources_params_input=data[0].data_sources_params_input
+                            $("#data_sources_params_input").val(data_sources_params_input)
+
+                            //获取表名/文件名
+                            if(data_source_type_input=="JDBC"){
+                                //获取表名
+                                var data_sources_table_name_input=data[0].data_sources_table_name_input;
+                                //初始化数据源对应的表
+                                var postData={
+                                    id:data_sources_choose_input
+                                }
+
+                                $.ajax({
+                                    type: 'POST',
+                                    url: "etl_task_tables",
+                                    async: true,
+                                    dataType: 'json',
+                                    data: postData,
+                                    //成功返回
+                                    success: function (data_table) {
+
+                                        var str = '<option value=\"\" hassubinfo=\"true\"></option>'
+                                        for (var i = 0; i < data_table.length; i++) {
+                                            str += '<option value=\"' + data_table[i] + '\" hassubinfo=\"true\">' + data_table[i] + '</option>'
+                                        }
+                                        $('#data_sources_table_name_input').html(str);
+                                        $("#data_sources_table_name_input").trigger("chosen:updated");
+                                        $('#data_sources_table_name_input').chosen();
+
+                                        $('#data_sources_table_name_input').val(data_sources_table_name_input);
+                                        $("#data_sources_table_name_input").trigger("chosen:updated");
+                                    },
+                                    //处理完成
+                                    complete: function () {
+                                        console.info("complete")
+                                    },
+                                    //报错
+                                    error: function (data_table) {
+                                        console.info("error: " + data_table.responseText);
+                                    }
+                                });
+                                $('#div_data_sources_file_name_input')[0].style.display='none';
+                                $('#div_data_sources_file_columns')[0].style.display='none';
+
+                                $('#div_data_sources_table_name_input')[0].style.display='block';
+                                //表字段
+                                $('#div_data_sources_table_columns')[0].style.display='block';
+
+
+                            }
+                            else{
+                                var data_sources_file_name_input=data[0].data_sources_file_name_input
+                                $('#data_sources_file_name_input').val(data_sources_file_name_input)
+                            }
+
+                            //获取过滤条件
+                            var data_sources_filter_input=data[0].data_sources_filter_input
+                            $('#data_sources_filter_input').val(data_sources_filter_input)
+
+                            //获取 配置选择的列
+                            if(data_source_type_input=="JDBC"){
+                                var data_sources_table_columns=data[0].data_sources_table_columns
+                                $('#data_sources_table_columns').val(data_sources_table_columns)
+                            }else{
+                                var data_sources_file_columns=data[0].data_sources_file_columns
+                                $('#data_sources_file_columns').val(data_sources_file_columns)
+                            }
+
+
+                            //获取配置 对应的table 中配置
+                            var column_datas=data[0].column_datas
+                            var cd=JSON.parse(column_datas)
+                            for(var i=0;i<cd.length;i++){
+                                var index = $('#exampleTableEvents').bootstrapTable('getData').length;
+                                $('#exampleTableEvents').bootstrapTable('insertRow',{index:index,
+                                    row:{column_expr:cd[i].column_expr,column_alias:cd[i].column_alias}});
+                            }
+
+
+                            // 获取输出数据源
+                            var data_sources_choose_output=data[0].data_sources_choose_output
+                            //初始化输入数据源select 组件
+                            $("#data_sources_choose_output").val(data_sources_choose_output);
+                            $("#data_sources_choose_output").trigger("chosen:updated");
+
+                            //获取输出数据源类型
+                            var data_source_type_output=data[0].data_source_type_output
+                            $("#data_source_type_output").val(data_source_type_output)
+
+                            //获取输入源数据其他参数
+                            var data_sources_params_output=data[0].data_sources_params_output
+                            $("#data_sources_params_output").val(data_sources_params_output)
+
+                            //获取输出数据源表名
+                            var data_sources_table_name_output=data[0].data_sources_table_name_output;
+                            var data_sources_file_name_output=data[0].data_sources_file_name_output
+
+                            if(data_source_type_output=="JDBC"){
+
+                                $('#data_sources_file_name_output').val(data_sources_file_name_output)
+
+                                //初始化数据源对应的表
+                                var postData={
+                                    id:data_sources_choose_output
+                                }
+
+                                $.ajax({
+                                    type: 'POST',
+                                    url: "etl_task_tables",
+                                    dataType: 'json',
+                                    data: postData,
+                                    //成功返回
+                                    success: function (data_table) {
+
+                                        var str = '<option value=\"\" hassubinfo=\"true\"></option>'
+                                        for (var i = 0; i < data_table.length; i++) {
+                                            str += '<option value=\"' + data_table[i] + '\" hassubinfo=\"true\">' + data_table[i] + '</option>'
+                                        }
+                                        $('#data_sources_table_name_output').html(str);
+                                        $("#data_sources_table_name_output").trigger("chosen:updated");
+                                        $('#data_sources_table_name_output').chosen();
+
+                                        //表名再数据源中匹配不到,说明是自己添加的
+                                        if(str.search(data_sources_table_name_output) == -1){
+                                            check_tb_name()
+                                        }
+                                        $('#data_sources_table_name_output').val(data_sources_table_name_output);
+                                        $("#data_sources_table_name_output").trigger("chosen:updated");
+                                    },
+                                    //处理完成
+                                    complete: function () {
+                                        console.info("complete")
+                                    },
+                                    //报错
+                                    error: function (data_table) {
+                                        console.info("error: " + data_table.responseText);
+                                    }
+                                });
+
+                                $('#div_data_sources_table_name_output')[0].style.display='block';
+                                $('#div_data_sources_file_name_output')[0].style.display='block';
+
+                            }else{
+
+                                $('#data_sources_file_name_output').val(data_sources_file_name_output)
+                                $('#div_data_sources_table_name_output')[0].style.display='none';
+                                $('#div_data_sources_file_name_output')[0].style.display='block';
+                            }
+
+                            //获取输出删除条件
+                            var data_sources_clear_output=data[0].data_sources_clear_output;
+                            $('#data_sources_clear_output').val(data_sources_clear_output)
+
+
+
+                        },
+                        error: function (data) {
+                            console.info("error: " + data.responseText);
+                        }
+
+                    });
+
+
+                }
+            }
+
 
         })();
 
@@ -856,7 +879,8 @@
                     return v.toString(16);
                 });
             }
-            column=guid()
+            //column=guid()
+            column=new Date().getTime()
         }
         // newFlag == 1的数据为新规的数据
         $('#exampleTableEvents').bootstrapTable('insertRow',{index:index,row:{column_expr:column,column_alias:column}});
@@ -916,7 +940,6 @@
         }
 
         //alert($("#etl_task_add_form").serialize()+"&"+"column_datas="+JSON.stringify(column_datas))
-
         $.ajax({
             type: 'POST',
             url: "etl_task_add",
@@ -973,6 +996,7 @@
 
         //alert($("#etl_task_add_form").serialize()+"&"+"column_datas="+JSON.stringify(column_datas))
         //alert(s.id)
+        //alert(JSON.stringify(column_datas))
         $.ajax({
             type: 'POST',
             url: "etl_task_update",

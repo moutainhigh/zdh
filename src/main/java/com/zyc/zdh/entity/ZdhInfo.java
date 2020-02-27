@@ -9,7 +9,7 @@ class Dsi_Info{
     private String user;
     private String password;
     private String dbtable;
-    private String paths;
+    private String paths;//表名或者文件全路径
 
     public String getId() {
         return id;
