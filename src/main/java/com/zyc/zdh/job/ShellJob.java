@@ -308,6 +308,10 @@ public class ShellJob extends JobCommon{
     }
 
 
+    /**
+     * 重复执行
+     * @param quartzJobInfo
+     */
     private static void runRepeat(QuartzJobInfo quartzJobInfo){
 
         logger.info("[SHELL] JOB,任务模式为[重复执行模式]");

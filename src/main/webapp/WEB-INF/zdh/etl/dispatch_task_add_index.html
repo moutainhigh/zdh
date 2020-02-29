@@ -56,7 +56,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label">ETL任务</label>
                             <div class="col-sm-10">
-                                <select id="etl_task_id" name="etl_task_id" data-placeholder="选择数据源..."
+                                <select id="etl_task_id" name="etl_task_id" data-placeholder="选择ETL任务..."
                                         class="chosen-select form-control m-b" tabindex="2">
                                     <option value="" mytype="">ETL任务...</option>
                                 </select>
@@ -264,7 +264,7 @@
             }
 
             //初始化数据源
-            function init_data_sources(){
+            function init_etl_task_sources(){
                 $.ajax({
                     type: 'POST',
                     async: false,
@@ -293,7 +293,7 @@
             }
 
             //启动数据源select 初始化函数
-            init_data_sources();
+            init_etl_task_sources();
             //s.id=-1 表示新增,否则表示更新
             if(s.id==-1){
                 $('#etl_task_id').chosen();
@@ -314,8 +314,10 @@
                 language:"zh-CN", //语言选择中文 注：旧版本 新版方法：$.datetimepicker.setLocale('ch');
                 yearStart:2000,     //设置最小年份
                 yearEnd:2050,        //设置最大年份
-                todayButton:true    //关闭选择今天按钮
+                todayButton:true,    //关闭选择今天按钮
+                initalDate:new Date()
             });
+            $("#start_time").val(getCurrentDate())
 
             $("#end_time").datetimepicker({
                 format: 'yyyy-mm-dd',
@@ -327,10 +329,21 @@
                 yearEnd:2050,        //设置最大年份
                 todayButton:true    //关闭选择今天按钮
             });
-
+            $("#end_time").val(getCurrentDate())
             $('#job_type').chosen();
             $('#job_model').chosen();
 
+            function getCurrentDate(){
+                var oDate = new Date(),
+                    oYear = oDate.getFullYear(),
+                    oMonth = oDate.getMonth()+1,
+                    oDay = oDate.getDate(),
+                    oHour = oDate.getHours(),
+                    oMin = oDate.getMinutes(),
+                    oSen = oDate.getSeconds(),
+                    oTime = oYear +'-'+ getzf(oMonth) +'-'+ getzf(oDay);//最后拼接时间
+                return oTime;
+            };
 
             function getMyDate(str){
                 var oDate = new Date(str),
