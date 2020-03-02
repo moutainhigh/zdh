@@ -24,25 +24,41 @@ import java.util.Date;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
-public class ShellJob extends JobCommon{
+public class ShellJob extends JobCommon {
 
     public static void run(QuartzJobInfo quartzJobInfo) {
 
         logger.info("开始执行[SHELL] JOB");
         //debugInfo(quartzJobInfo);
+
+        //last_status 表示 finish,etl,error
+        //finish 表示成功,etl 表示正在处理,error 表示失败
+        if (quartzJobInfo.getLast_status() != null && quartzJobInfo.getLast_status().equals("etl")) {
+            logger.info("[SHELL] JOB ,当前任务正在处理中");
+            return;
+        }
+
+        //error 状态  next_time 减一天
+        if (quartzJobInfo.getLast_status() != null && quartzJobInfo.getLast_status().equals("error")) {
+            logger.info("[SHELL] JOB ,上次任务处理失败,将重新执行");
+            Date next = quartzJobInfo.getNext_time();
+            logger.info("执行时间减一天");
+            quartzJobInfo.setNext_time(DateUtil.add(next, -1));
+        }
+
+        //finish成功状态 判断next_time 是否超过结束日期,超过，删除任务,更新状态--具体操作 见每个单独的逻辑
+
         if (quartzJobInfo.getJob_model().equals(JobModel.TIME_SEQ.getValue())) {
             runTimeSeq(quartzJobInfo);
         } else if (quartzJobInfo.getJob_model().equals(JobModel.ONCE.getValue())) {
             runOnce(quartzJobInfo);
-        }else if (quartzJobInfo.getJob_model().equals(JobModel.REPEAT.getValue())) {
+        } else if (quartzJobInfo.getJob_model().equals(JobModel.REPEAT.getValue())) {
             runRepeat(quartzJobInfo);
         }
-
-
     }
 
 
-    private static Boolean shellCommand(QuartzJobInfo quartzJobInfo){
+    private static Boolean shellCommand(QuartzJobInfo quartzJobInfo) {
         Boolean exe_status = true;
         //执行命令
         try {
@@ -62,11 +78,11 @@ public class ShellJob extends JobCommon{
                 String date_nodash = DateUtil.formatNodash(quartzJobInfo.getNext_time());
                 String date = DateUtil.format(quartzJobInfo.getNext_time());
                 logger.info("[SHELL] JOB ,COMMAND:" + quartzJobInfo.getCommand());
-                String result ="fail";
-                if(quartzJobInfo.getCommand().trim().equals("")){
-                    result="success";
-                }else{
-                    result=CommandUtils.exeCommand(quartzJobInfo.getCommand().
+                String result = "fail";
+                if (quartzJobInfo.getCommand().trim().equals("")) {
+                    result = "success";
+                } else {
+                    result = CommandUtils.exeCommand(quartzJobInfo.getCommand().
                             replace("zdh.date.nodash", date_nodash).
                             replace("zdh.date", date));
                 }
@@ -83,7 +99,6 @@ public class ShellJob extends JobCommon{
     }
 
 
-
     /**
      * 执行时间序列任务,会根据配置的起始时间和结束时间 按天执行
      *
@@ -93,24 +108,50 @@ public class ShellJob extends JobCommon{
         logger.info("[SHELL] JOB,任务模式为[时间序列]");
 
         QuartzManager2 quartzManager2 = (QuartzManager2) SpringContext.getBean("quartzManager2");
-        Boolean is_count = true;
-        //判断次数
-        quartzJobInfo.setCount(quartzJobInfo.getCount() + 1);
-        isCount("SHELL",quartzManager2,quartzJobInfo);
-
-        if (quartzJobInfo.getPlan_count().trim().equals("-1")) {
-            logger.info("[SHELL] JOB ,当前任务未设置执行次数限制");
-        }
-        Boolean exe_status=false;
-        exe_status=shellCommand(quartzJobInfo);
-
-        //拼接任务信息发送请求
-
-
         QuartzJobMapper quartzJobMapper = (QuartzJobMapper) SpringContext.getBean("quartzJobMapper");
         EtlTaskService etlTaskService = (EtlTaskService) SpringContext.getBean("etlTaskServiceImpl");
         DataSourcesServiceImpl dataSourcesServiceImpl = (DataSourcesServiceImpl) SpringContext.getBean("dataSourcesServiceImpl");
         ZdhLogsService zdhLogsService = (ZdhLogsService) SpringContext.getBean("zdhLogsServiceImpl");
+
+        //finish成功状态 判断next_time 是否超过结束日期,超过，删除任务,更新状态
+        if (quartzJobInfo.getNext_time() != null && quartzJobInfo.getNext_time().after(quartzJobInfo.getEnd_time())) {
+            logger.info("[SHELL] JOB ,下次时间超过结束时间,任务结束");
+            quartzJobInfo.setStatus("finish");
+            //删除quartz 任务
+            quartzManager2.deleteTask(quartzJobInfo, "finish");
+
+            return;
+        }
+
+        //finish成功状态 判断次数是否超出,超过，删除任务,更新状态
+        if (quartzJobInfo.getCount() == Long.parseLong(quartzJobInfo.getPlan_count().trim())) {
+            System.out.println("===================================");
+            quartzJobInfo.setStatus("finish");
+            //delete 里面包含更新
+            quartzManager2.deleteTask(quartzJobInfo, "finish");
+            ZdhLogs zdhLogs = new ZdhLogs();
+            zdhLogs.setMsg("[JDBC] JOB ,结束调度任务");
+            zdhLogs.setJob_id(quartzJobInfo.getJob_id());
+            zdhLogs.setLog_time(new Timestamp(new Date().getTime()));
+            zdhLogsService.insert(zdhLogs);
+
+            return;
+        }
+
+
+        Boolean is_count = true;
+        //判断次数
+        quartzJobInfo.setCount(quartzJobInfo.getCount() + 1);
+        isCount("SHELL", quartzManager2, quartzJobInfo);
+
+        if (quartzJobInfo.getPlan_count().trim().equals("-1")) {
+            logger.info("[SHELL] JOB ,当前任务未设置执行次数限制");
+        }
+        Boolean exe_status = false;
+        exe_status = shellCommand(quartzJobInfo);
+
+        //拼接任务信息发送请求
+
 
         String params = quartzJobInfo.getParams().trim();
         String url = "http://127.0.0.1:60001/api/v1/zdh";
@@ -159,40 +200,17 @@ public class ShellJob extends JobCommon{
             quartzJobInfo.setLast_time(last_time);
             Date next_time = DateUtil.add(last_time, 1);
             quartzJobInfo.setNext_time(next_time);
+            quartzJobInfo.setLast_status("etl");
 
             if (quartzJobInfo.getEnd_time() == null) {
                 logger.info("[SHELL] JOB ,结束日期为空设置当前日期为结束日期");
                 quartzJobInfo.setEnd_time(new Date());
             }
 
-            if (next_time.after(quartzJobInfo.getEnd_time())) {
-                logger.info("[SHELL] JOB ,下次时间超过结束时间,任务结束");
-                quartzJobInfo.setStatus("finish");
-                //删除quartz 任务
-
-                quartzManager2.deleteTask(quartzJobInfo, "finish");
-            }
             //更新任务信息
             debugInfo(quartzJobInfo);
-            if (quartzJobInfo.getCount() == Long.parseLong(quartzJobInfo.getPlan_count().trim())) {
-                System.out.println("===================================");
-                quartzJobInfo.setStatus("finish");
-                //delete 里面包含更新
-                quartzManager2.deleteTask(quartzJobInfo, "finish");
-                ZdhLogs zdhLogs=new ZdhLogs();
-                zdhLogs.setMsg("[JDBC] JOB ,结束调度任务");
-                zdhLogs.setJob_id(quartzJobInfo.getJob_id());
-                zdhLogs.setLog_time(new Timestamp(new Date().getTime()));
-                zdhLogsService.insert(zdhLogs);
-            } else {
-                quartzJobMapper.updateByPrimaryKey(quartzJobInfo);
-            }
-        } else {
-            //如果执行失败 next_time 时间不变,last_time 不变
-
-            quartzJobMapper.updateByPrimaryKey(quartzJobInfo);
         }
-
+        quartzJobMapper.updateByPrimaryKey(quartzJobInfo);
 
     }
 
@@ -225,8 +243,8 @@ public class ShellJob extends JobCommon{
         if (quartzJobInfo.getPlan_count().trim().equals("-1")) {
             logger.info("[SHELL] JOB ,当前任务未设置执行次数限制");
         }
-        Boolean exe_status=false;
-        exe_status=shellCommand(quartzJobInfo);
+        Boolean exe_status = false;
+        exe_status = shellCommand(quartzJobInfo);
         //拼接任务信息发送请求
 
         QuartzManager2 quartzManager2 = (QuartzManager2) SpringContext.getBean("quartzManager2");
@@ -282,6 +300,7 @@ public class ShellJob extends JobCommon{
             quartzJobInfo.setLast_time(last_time);
             Date next_time = last_time;
             quartzJobInfo.setNext_time(next_time);
+            quartzJobInfo.setLast_status("etl");
 
             if (quartzJobInfo.getEnd_time() == null) {
                 logger.info("[SHELL] JOB ,结束日期为空设置当前日期为结束日期");
@@ -294,7 +313,7 @@ public class ShellJob extends JobCommon{
             quartzJobInfo.setStatus("finish");
             //delete 里面包含更新
             quartzManager2.deleteTask(quartzJobInfo, "finish");
-            ZdhLogs zdhLogs=new ZdhLogs();
+            ZdhLogs zdhLogs = new ZdhLogs();
             zdhLogs.setMsg("[JDBC] JOB ,结束调度任务");
             zdhLogs.setJob_id(quartzJobInfo.getJob_id());
             zdhLogs.setLog_time(new Timestamp(new Date().getTime()));
@@ -310,32 +329,47 @@ public class ShellJob extends JobCommon{
 
     /**
      * 重复执行
+     *
      * @param quartzJobInfo
      */
-    private static void runRepeat(QuartzJobInfo quartzJobInfo){
+    private static void runRepeat(QuartzJobInfo quartzJobInfo) {
 
         logger.info("[SHELL] JOB,任务模式为[重复执行模式]");
 
         QuartzManager2 quartzManager2 = (QuartzManager2) SpringContext.getBean("quartzManager2");
-        Boolean is_count = true;
-        //判断次数
-        quartzJobInfo.setCount(quartzJobInfo.getCount() + 1);
-
-        isCount("SHELL",quartzManager2,quartzJobInfo);
-
-        if (quartzJobInfo.getPlan_count().trim().equals("-1")) {
-            logger.info("[SHELL] JOB ,当前任务未设置执行次数限制,此任务将一直执行");
-        }
-        Boolean exe_status=false;
-        exe_status=shellCommand(quartzJobInfo);
-
-        //拼接任务信息发送请求
-
-
         QuartzJobMapper quartzJobMapper = (QuartzJobMapper) SpringContext.getBean("quartzJobMapper");
         EtlTaskService etlTaskService = (EtlTaskService) SpringContext.getBean("etlTaskServiceImpl");
         DataSourcesServiceImpl dataSourcesServiceImpl = (DataSourcesServiceImpl) SpringContext.getBean("dataSourcesServiceImpl");
         ZdhLogsService zdhLogsService = (ZdhLogsService) SpringContext.getBean("zdhLogsServiceImpl");
+
+        if (quartzJobInfo.getCount() == Long.parseLong(quartzJobInfo.getPlan_count().trim())) {
+            System.out.println("===================================");
+            quartzJobInfo.setStatus("finish");
+            //delete 里面包含更新
+            quartzManager2.deleteTask(quartzJobInfo, "finish");
+            ZdhLogs zdhLogs = new ZdhLogs();
+            zdhLogs.setMsg("[JDBC] JOB ,结束调度任务");
+            zdhLogs.setJob_id(quartzJobInfo.getJob_id());
+            zdhLogs.setLog_time(new Timestamp(new Date().getTime()));
+            zdhLogsService.insert(zdhLogs);
+
+            return;
+        }
+
+        Boolean is_count = true;
+        //判断次数
+        quartzJobInfo.setCount(quartzJobInfo.getCount() + 1);
+
+        isCount("SHELL", quartzManager2, quartzJobInfo);
+
+        if (quartzJobInfo.getPlan_count().trim().equals("-1")) {
+            logger.info("[SHELL] JOB ,当前任务未设置执行次数限制,此任务将一直执行");
+        }
+        Boolean exe_status = false;
+        exe_status = shellCommand(quartzJobInfo);
+
+        //拼接任务信息发送请求
+
 
         String params = quartzJobInfo.getParams().trim();
         String url = "http://127.0.0.1:60001/api/v1/zdh";
@@ -384,32 +418,18 @@ public class ShellJob extends JobCommon{
             quartzJobInfo.setLast_time(last_time);
             Date next_time = last_time;
             quartzJobInfo.setNext_time(next_time);
+            quartzJobInfo.setLast_status("etl");
 
             if (quartzJobInfo.getEnd_time() == null) {
                 logger.info("[SHELL] JOB ,结束日期为空设置当前日期为结束日期");
                 quartzJobInfo.setEnd_time(new Date());
             }
-
-            //更新任务信息
-            debugInfo(quartzJobInfo);
-            if (quartzJobInfo.getCount() == Long.parseLong(quartzJobInfo.getPlan_count().trim())) {
-                System.out.println("===================================");
-                quartzJobInfo.setStatus("finish");
-                //delete 里面包含更新
-                quartzManager2.deleteTask(quartzJobInfo, "finish");
-                ZdhLogs zdhLogs=new ZdhLogs();
-                zdhLogs.setMsg("[JDBC] JOB ,结束调度任务");
-                zdhLogs.setJob_id(quartzJobInfo.getJob_id());
-                zdhLogs.setLog_time(new Timestamp(new Date().getTime()));
-                zdhLogsService.insert(zdhLogs);
-            } else {
-                quartzJobMapper.updateByPrimaryKey(quartzJobInfo);
-            }
-        } else {
-            //如果执行失败 next_time 时间不变,last_time 不变
-
-            quartzJobMapper.updateByPrimaryKey(quartzJobInfo);
         }
+        //更新任务信息
+        debugInfo(quartzJobInfo);
+
+        //如果执行失败 next_time 时间不变,last_time 不变
+        quartzJobMapper.updateByPrimaryKey(quartzJobInfo);
 
 
     }

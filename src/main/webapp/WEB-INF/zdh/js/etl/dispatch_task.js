@@ -328,14 +328,69 @@
                 title: '操作',
                 events: operateEvents,//给按钮注册事件
                 width: 150,
+                align : "center",
+                valign : "middle",
                 formatter: operateFormatter //表格中增加按钮
             }, {
                 field: 'operate2',
                 title: '调度操作',
                 events: operateEvents2,//给按钮注册事件
+                align : "center",
+                valign : "middle",
                 width: 210,
                 formatter: operateFormatter2 //表格中增加按钮
-            }]
+            }, {
+                field: 'start_time',
+                title: '开始时间',
+                sortable: true,
+                visible:false
+            }, {
+                field: 'end_time',
+                title: '结束时间',
+                sortable: true,
+                visible:false
+            }, {
+                field: 'job_model',
+                title: '执行模式',
+                sortable: true,
+                visible:false
+            }, {
+                field: 'plan_count',
+                title: '计划执行次数',
+                sortable: true,
+                visible:false
+            }, {
+                field: 'count',
+                title: '执行次数',
+                sortable: true,
+                visible:false
+            }, {
+                field: 'command',
+                title: 'command',
+                sortable: true,
+                visible:false
+            }, {
+                field: 'last_status',
+                title: '执行状态',
+                sortable: true,
+                visible:false
+            }, {
+                field: 'last_time',
+                title: '上次任务执行时间',
+                sortable: true,
+                visible:false
+            }, {
+                field: 'next_time',
+                title: '下次任务执行时间',
+                sortable: true,
+                visible:false
+            }, {
+                field: 'params',
+                title: '参数',
+                sortable: true,
+                visible:false
+            }
+            ]
         });
 
 

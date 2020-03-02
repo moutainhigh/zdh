@@ -26,13 +26,15 @@ public class QuartzJobInfo implements Serializable {
     private long count=0;//执行次数
     private String command;// command,
     private String params;// 参数,
-    private String last_status;// 上次任务是否执行完必
+    private String last_status;// 上次任务是否执行完必,finish,etl,error,用来记录异步采集程序的状态
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date last_time;// 上次任务执行时间,
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date next_time;// 下次任务执行时间,
     private String expr;// quartz 表达式
     private String status;// 任务状态,create,running,pause,finish,remove,error
     private String ip;//服务器地址,
-    private String user;//用户名，
+    private String user;//用户名,
     private String password;//密码
     private String etl_task_id;
     private String etl_context;
