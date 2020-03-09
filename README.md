@@ -22,7 +22,7 @@
  # 支持的数据源
    + hive
    + hdfs
-   + jdbc (所有的jdbc,包含特殊jdbc如hbase-phoenix,hive-jdbc,spark-jdbc)
+   + jdbc (所有的jdbc,包含特殊jdbc如hbase-phoenix,spark-jdbc)
    + hbase
    + kafka(暂未支持)
 
