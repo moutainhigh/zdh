@@ -64,8 +64,8 @@ public class ZdhLogsServiceImpl implements ZdhLogsService {
     }
 
     @Override
-    public List<ZdhLogs> selectByTime(String job_id, Timestamp start_time, Timestamp end_time) {
-        return zdhLogsMapper.selectByTime(job_id,start_time,end_time);
+    public List<ZdhLogs> selectByTime(String job_id, Timestamp start_time, Timestamp end_time,String levels) {
+        return zdhLogsMapper.selectByTime(job_id,start_time,end_time,levels);
     }
 
     @Override

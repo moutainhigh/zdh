@@ -11,6 +11,8 @@ public class ZdhLogs  extends PageBase implements Serializable {
 
     private String msg;
 
+    private String level;
+
 
     public String getJob_id() {
         return job_id;
@@ -34,5 +36,13 @@ public class ZdhLogs  extends PageBase implements Serializable {
 
     public void setMsg(String msg) {
         this.msg = msg;
+    }
+
+    public String getLevel() {
+        return level;
+    }
+
+    public void setLevel(String level) {
+        this.level = level;
     }
 }

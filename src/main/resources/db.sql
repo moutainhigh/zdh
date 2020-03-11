@@ -133,7 +133,8 @@ drop TABLE if EXISTS zdh_logs;
 create table zdh_logs(
 job_id VARCHAR(100),
 log_time TIMESTAMP ,
-msg text
+msg text,
+level varchar(10)
 );
 
 

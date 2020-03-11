@@ -515,7 +515,7 @@ public class ZdhController {
 
     @RequestMapping(value = "/zhd_logs", produces = "text/html;charset=UTF-8")
     @ResponseBody
-    public String zhd_logs(String id, String start_time, String end_time,String del) {
+    public String zhd_logs(String id, String start_time, String end_time,String del,String level) {
         System.out.println("id:" + id + ",start_time:" + start_time + ",end_time:" + end_time);
 
 
@@ -536,8 +536,17 @@ public class ZdhController {
             zdhLogsService.deleteByTime(id, ts_start, ts_end);
         }
 
+        String levels="'debug','info','error'";
+        if(level !=null && level.toLowerCase().equals("info")){
+            levels="'info','error'";
+        }
+        if(level !=null && level.toLowerCase().equals("error")){
+            levels="'error'";
+        }
 
-        List<ZdhLogs> zhdLogs = zdhLogsService.selectByTime(id, ts_start, ts_end);
+
+
+        List<ZdhLogs> zhdLogs = zdhLogsService.selectByTime(id, ts_start, ts_end,levels);
         Iterator<ZdhLogs> it = zhdLogs.iterator();
         StringBuilder sb = new StringBuilder();
         while (it.hasNext()) {

@@ -27,6 +27,8 @@ public class JdbcJob extends JobCommon {
 
     public static void run(QuartzJobInfo quartzJobInfo) {
 
+        ZdhLogsService zdhLogsService = (ZdhLogsService) SpringContext.getBean("zdhLogsServiceImpl");
+
         logger.info("开始执行[JDBC] JOB");
         //debugInfo(quartzJobInfo);
 
@@ -34,14 +36,17 @@ public class JdbcJob extends JobCommon {
         //finish 表示成功,etl 表示正在处理,error 表示失败
         if (quartzJobInfo.getLast_status() != null && quartzJobInfo.getLast_status().equals("etl")) {
             logger.info("[JDBC] JOB ,当前任务正在处理中");
+            insertLog(quartzJobInfo.getJob_id(),"info",
+                    "[JDBC] JOB ,当前任务正在处理中",zdhLogsService);
             return;
         }
 
         //error 状态  next_time 减一天
         if (quartzJobInfo.getLast_status() != null && quartzJobInfo.getLast_status().equals("error")) {
-            logger.info("[JDBC] JOB ,上次任务处理失败,将重新执行");
+            logger.info("[JDBC] JOB ,上次任务处理失败,将重新执行,执行时间减一天");
+            insertLog(quartzJobInfo.getJob_id(),"info",
+                    "[JDBC] JOB ,上次任务处理失败,将重新执行,执行时间减一天",zdhLogsService);
             Date next = quartzJobInfo.getNext_time();
-            logger.info("执行时间减一天");
             quartzJobInfo.setNext_time(DateUtil.add(next, -1));
         }
 
@@ -68,11 +73,9 @@ public class JdbcJob extends JobCommon {
             if (params.equals("")) {
                 exe_status = false;
                 logger.info("参数不可为空,必须包含特定参数,zdh.jdbc.url,zdh.jdbc.driver,zdh.jdbc.username,zdh.jdbc.password");
-                ZdhLogs zdhLogs = new ZdhLogs();
-                zdhLogs.setMsg("参数不可为空,必须包含特定参数,zdh.jdbc.url,zdh.jdbc.driver,zdh.jdbc.username,zdh.jdbc.password");
-                zdhLogs.setJob_id(quartzJobInfo.getJob_id());
-                zdhLogs.setLog_time(new Timestamp(new Date().getTime()));
-                zdhLogsService.insert(zdhLogs);
+                insertLog(quartzJobInfo.getJob_id(),"error",
+                        "参数不可为空,必须包含特定参数,zdh.jdbc.url,zdh.jdbc.driver,zdh.jdbc.username,zdh.jdbc.password",zdhLogsService);
+
                 return exe_status;
             }
             String url = JSON.parseObject(params).getString("zdh.jdbc.url");
@@ -83,11 +86,10 @@ public class JdbcJob extends JobCommon {
             if (url == null || url.equals("") || driver == null || driver.equals("") || username == null || username.equals("") || password == null || password.equals("")) {
                 exe_status = false;
                 logger.info("[JDBC] JOB ,参数不可为空");
-                ZdhLogs zdhLogs = new ZdhLogs();
-                zdhLogs.setMsg("参数不可为空,必须包含特定参数,zdh.jdbc.url,zdh.jdbc.driver,zdh.jdbc.username,zdh.jdbc.password");
-                zdhLogs.setJob_id(quartzJobInfo.getJob_id());
-                zdhLogs.setLog_time(new Timestamp(new Date().getTime()));
-                zdhLogsService.insert(zdhLogs);
+                //插入日志
+                insertLog(quartzJobInfo.getJob_id(),"error",
+                        "参数不可为空,必须包含特定参数,zdh.jdbc.url,zdh.jdbc.driver,zdh.jdbc.username,zdh.jdbc.password",zdhLogsService);
+
                 return exe_status;
             }
 
@@ -117,11 +119,9 @@ public class JdbcJob extends JobCommon {
             }
             return exe_status;
         } catch (Exception ex) {
-            ZdhLogs zdhLogs = new ZdhLogs();
-            zdhLogs.setMsg(ex.getMessage());
-            zdhLogs.setJob_id(quartzJobInfo.getJob_id());
-            zdhLogs.setLog_time(new Timestamp(new Date().getTime()));
-            zdhLogsService.insert(zdhLogs);
+            //插入日志
+            insertLog(quartzJobInfo.getJob_id(),"error",
+                    "[调度平台]:"+ex.getMessage(),zdhLogsService);
             logger.error(ex.getMessage());
             return false;
         }
@@ -158,12 +158,9 @@ public class JdbcJob extends JobCommon {
             quartzJobInfo.setStatus("finish");
             //delete 里面包含更新
             quartzManager2.deleteTask(quartzJobInfo, "finish");
-            ZdhLogs zdhLogs = new ZdhLogs();
-            zdhLogs.setMsg("[JDBC] JOB ,结束调度任务");
-            zdhLogs.setJob_id(quartzJobInfo.getJob_id());
-            zdhLogs.setLog_time(new Timestamp(new Date().getTime()));
-            zdhLogsService.insert(zdhLogs);
-
+            //插入日志
+            insertLog(quartzJobInfo.getJob_id(),"info",
+                    "[JDBC] JOB ,结束调度任务",zdhLogsService);
             return;
         }
 
@@ -198,11 +195,9 @@ public class JdbcJob extends JobCommon {
                 exe_status = true;
             } catch (Exception ex) {
                 exe_status = false;
-                ZdhLogs zdhLogs = new ZdhLogs();
-                zdhLogs.setMsg("[JDBC] JOB ,发送任务到ETL处理失败:" + ex.getMessage());
-                zdhLogs.setJob_id(quartzJobInfo.getJob_id());
-                zdhLogs.setLog_time(new Timestamp(new Date().getTime()));
-                zdhLogsService.insert(zdhLogs);
+                //插入日志
+                insertLog(quartzJobInfo.getJob_id(),"error",
+                        "[JDBC] JOB ,发送任务到ETL处理失败:" + ex.getMessage(),zdhLogsService);
             }
 
         }
@@ -286,12 +281,8 @@ public class JdbcJob extends JobCommon {
             if (exe_status == true) {
                 logger.info("[JDBC] JOB ,开始发送ETL处理请求");
                 HttpUtil.postJSON(url, JSON.toJSONString(zdhInfo));
-                ZdhLogs zdhLogs = new ZdhLogs();
-                zdhLogs.setJob_id(zdhInfo.getQuartzJobInfo().getJob_id());
-                Timestamp lon_time = new Timestamp(new Date().getTime());
-                zdhLogs.setLog_time(lon_time);
-                zdhLogs.setMsg("[调度平台]:" + JSON.toJSONString(zdhInfo));
-                zdhLogsService.insert(zdhLogs);
+                //插入日志
+                insertLog(quartzJobInfo.getJob_id(),"debug",JSON.toJSONString(zdhInfo),zdhLogsService);
             }
         } catch (Exception e) {
             logger.error(e.getMessage());
@@ -324,12 +315,8 @@ public class JdbcJob extends JobCommon {
             quartzJobInfo.setStatus("finish");
             //delete 里面包含更新
             quartzManager2.deleteTask(quartzJobInfo, "finish");
-
-            ZdhLogs zdhLogs = new ZdhLogs();
-            zdhLogs.setMsg("[JDBC] JOB ,结束调度任务");
-            zdhLogs.setJob_id(quartzJobInfo.getJob_id());
-            zdhLogs.setLog_time(new Timestamp(new Date().getTime()));
-            zdhLogsService.insert(zdhLogs);
+            //插入日志
+            insertLog(quartzJobInfo.getJob_id(),"info","[JDBC] JOB ,结束调度任务",zdhLogsService);
         } else {
             //如果执行失败 next_time 时间不变,last_time 不变
             quartzJobMapper.updateByPrimaryKey(quartzJobInfo);
@@ -360,12 +347,8 @@ public class JdbcJob extends JobCommon {
             quartzJobInfo.setStatus("finish");
             //delete 里面包含更新
             quartzManager2.deleteTask(quartzJobInfo, "finish");
-            ZdhLogs zdhLogs = new ZdhLogs();
-            zdhLogs.setMsg("[JDBC] JOB ,结束调度任务");
-            zdhLogs.setJob_id(quartzJobInfo.getJob_id());
-            zdhLogs.setLog_time(new Timestamp(new Date().getTime()));
-            zdhLogsService.insert(zdhLogs);
-
+            //插入日志
+            insertLog(quartzJobInfo.getJob_id(),"info","[JDBC] JOB ,结束调度任务",zdhLogsService);
             return;
         }
 
@@ -403,12 +386,8 @@ public class JdbcJob extends JobCommon {
             if (exe_status == true) {
                 logger.info("[JDBC] JOB ,开始发送ETL处理请求");
                 HttpUtil.postJSON(url, JSON.toJSONString(zdhInfo));
-                ZdhLogs zdhLogs = new ZdhLogs();
-                zdhLogs.setJob_id(zdhInfo.getQuartzJobInfo().getJob_id());
-                Timestamp lon_time = new Timestamp(new Date().getTime());
-                zdhLogs.setLog_time(lon_time);
-                zdhLogs.setMsg("[调度平台]:" + JSON.toJSONString(zdhInfo));
-                zdhLogsService.insert(zdhLogs);
+                //插入日志
+                insertLog(zdhInfo.getQuartzJobInfo().getJob_id(),"debug","[调度平台]:" +JSON.toJSONString(zdhInfo),zdhLogsService);
             }
         } catch (Exception e) {
             logger.error(e.getMessage());

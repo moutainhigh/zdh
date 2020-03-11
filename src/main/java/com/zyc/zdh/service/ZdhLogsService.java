@@ -30,7 +30,7 @@ public interface ZdhLogsService {
 
 	public List<ZdhLogs> select(ZdhLogs zdhLogs);
 
-	public List<ZdhLogs> selectByTime(String job_id, Timestamp start_time,Timestamp end_time);
+	public List<ZdhLogs> selectByTime(String job_id, Timestamp start_time,Timestamp end_time,String levels);
 
 	public int deleteByTime(String id, Timestamp start_time,Timestamp end_time);
 }

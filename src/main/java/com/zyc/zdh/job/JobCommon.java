@@ -6,11 +6,14 @@ import com.zyc.zdh.dao.ZdhHaInfoMapper;
 import com.zyc.zdh.entity.*;
 import com.zyc.zdh.quartz.QuartzManager2;
 import com.zyc.zdh.service.EtlTaskService;
+import com.zyc.zdh.service.ZdhLogsService;
 import com.zyc.zdh.service.impl.DataSourcesServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -127,5 +130,23 @@ public class JobCommon {
             url=zdhHaInfoList.get(0).getZdh_url();
         }
         return url;
+    }
+
+
+    /**
+     * 插入日志
+     * @param job_id
+     * @param level
+     * @param msg
+     * @param zdhLogsService
+     */
+    public static void insertLog(String job_id,String level,String msg,ZdhLogsService zdhLogsService){
+        ZdhLogs zdhLogs = new ZdhLogs();
+        zdhLogs.setJob_id(job_id);
+        Timestamp lon_time = new Timestamp(new Date().getTime());
+        zdhLogs.setLog_time(lon_time);
+        zdhLogs.setMsg(msg);
+        zdhLogs.setLevel(level);
+        zdhLogsService.insert(zdhLogs);
     }
 }
