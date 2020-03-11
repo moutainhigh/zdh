@@ -2,10 +2,8 @@ package com.zyc.zdh.job;
 
 import com.alibaba.fastjson.JSON;
 import com.zyc.zdh.dao.QuartzJobMapper;
-import com.zyc.zdh.entity.DataSourcesInfo;
-import com.zyc.zdh.entity.EtlTaskInfo;
-import com.zyc.zdh.entity.QuartzJobInfo;
-import com.zyc.zdh.entity.ZdhInfo;
+import com.zyc.zdh.dao.ZdhHaInfoMapper;
+import com.zyc.zdh.entity.*;
 import com.zyc.zdh.quartz.QuartzManager2;
 import com.zyc.zdh.service.EtlTaskService;
 import com.zyc.zdh.service.impl.DataSourcesServiceImpl;
@@ -13,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Map;
 
 public class JobCommon {
@@ -114,5 +113,19 @@ public class JobCommon {
         return zdhInfo;
 
 
+    }
+
+    /**
+     * 获取后台url
+     * @param zdhHaInfoMapper
+     * @return
+     */
+    public static String getZdhUrl(ZdhHaInfoMapper zdhHaInfoMapper){
+        String url = "http://127.0.0.1:60001/api/v1/zdh";
+        List<ZdhHaInfo> zdhHaInfoList= zdhHaInfoMapper.selectByStatus("enabled");
+        if(zdhHaInfoList!=null && zdhHaInfoList.size()==1){
+            url=zdhHaInfoList.get(0).getZdh_url();
+        }
+        return url;
     }
 }

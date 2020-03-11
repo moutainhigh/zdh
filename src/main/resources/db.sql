@@ -2,6 +2,19 @@
 create database if NOT EXISTS mydb;
 
 use mydb;
+
+drop table if EXISTS zdh_ha_info;
+create table zdh_ha_info(
+id int not null AUTO_INCREMENT,
+zdh_instance VARCHAR(100),
+zdh_url VARCHAR(100),
+zdh_host VARCHAR(15),
+zdh_port varchar(5),
+zdh_status varchar(10),
+PRIMARY KEY (id)
+);
+
+
 drop table if EXISTS account_info;
 create table account_info(
 id int not null AUTO_INCREMENT,

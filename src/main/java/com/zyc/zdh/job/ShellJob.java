@@ -3,7 +3,9 @@ package com.zyc.zdh.job;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.zyc.zdh.dao.QuartzJobMapper;
+import com.zyc.zdh.dao.ZdhHaInfoMapper;
 import com.zyc.zdh.entity.QuartzJobInfo;
+import com.zyc.zdh.entity.ZdhHaInfo;
 import com.zyc.zdh.entity.ZdhInfo;
 import com.zyc.zdh.entity.ZdhLogs;
 import com.zyc.zdh.quartz.QuartzManager2;
@@ -21,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -112,6 +115,7 @@ public class ShellJob extends JobCommon {
         EtlTaskService etlTaskService = (EtlTaskService) SpringContext.getBean("etlTaskServiceImpl");
         DataSourcesServiceImpl dataSourcesServiceImpl = (DataSourcesServiceImpl) SpringContext.getBean("dataSourcesServiceImpl");
         ZdhLogsService zdhLogsService = (ZdhLogsService) SpringContext.getBean("zdhLogsServiceImpl");
+        ZdhHaInfoMapper zdhHaInfoMapper=(ZdhHaInfoMapper) SpringContext.getBean("zdhHaInfoMapper");
 
         //finish成功状态 判断next_time 是否超过结束日期,超过，删除任务,更新状态
         if (quartzJobInfo.getNext_time() != null && quartzJobInfo.getNext_time().after(quartzJobInfo.getEnd_time())) {
@@ -152,9 +156,9 @@ public class ShellJob extends JobCommon {
 
         //拼接任务信息发送请求
 
-
         String params = quartzJobInfo.getParams().trim();
-        String url = "http://127.0.0.1:60001/api/v1/zdh";
+        String url =getZdhUrl(zdhHaInfoMapper);
+
         if (!params.equals("")) {
             String value = JSON.parseObject(params).getString("url");
             if (value != null && !value.equals("")) {
@@ -252,9 +256,10 @@ public class ShellJob extends JobCommon {
         EtlTaskService etlTaskService = (EtlTaskService) SpringContext.getBean("etlTaskServiceImpl");
         DataSourcesServiceImpl dataSourcesServiceImpl = (DataSourcesServiceImpl) SpringContext.getBean("dataSourcesServiceImpl");
         ZdhLogsService zdhLogsService = (ZdhLogsService) SpringContext.getBean("zdhLogsServiceImpl");
+        ZdhHaInfoMapper zdhHaInfoMapper=(ZdhHaInfoMapper) SpringContext.getBean("zdhHaInfoMapper");
 
         String params = quartzJobInfo.getParams().trim();
-        String url = "http://127.0.0.1:60001/api/v1/zdh";
+        String url =getZdhUrl(zdhHaInfoMapper);
         if (!params.equals("")) {
             String value = JSON.parseObject(params).getString("url");
             if (value != null && !value.equals("")) {
@@ -341,6 +346,7 @@ public class ShellJob extends JobCommon {
         EtlTaskService etlTaskService = (EtlTaskService) SpringContext.getBean("etlTaskServiceImpl");
         DataSourcesServiceImpl dataSourcesServiceImpl = (DataSourcesServiceImpl) SpringContext.getBean("dataSourcesServiceImpl");
         ZdhLogsService zdhLogsService = (ZdhLogsService) SpringContext.getBean("zdhLogsServiceImpl");
+        ZdhHaInfoMapper zdhHaInfoMapper=(ZdhHaInfoMapper) SpringContext.getBean("zdhHaInfoMapper");
 
         if (quartzJobInfo.getCount() == Long.parseLong(quartzJobInfo.getPlan_count().trim())) {
             System.out.println("===================================");
@@ -372,7 +378,7 @@ public class ShellJob extends JobCommon {
 
 
         String params = quartzJobInfo.getParams().trim();
-        String url = "http://127.0.0.1:60001/api/v1/zdh";
+        String url =getZdhUrl(zdhHaInfoMapper);
         if (!params.equals("")) {
             String value = JSON.parseObject(params).getString("url");
             if (value != null && !value.equals("")) {
@@ -462,5 +468,9 @@ public class ShellJob extends JobCommon {
         }
         return result;
     }
+
+
+
+
 
 }

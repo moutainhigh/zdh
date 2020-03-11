@@ -3,6 +3,7 @@ package com.zyc.zdh.job;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.zyc.zdh.dao.QuartzJobMapper;
+import com.zyc.zdh.dao.ZdhHaInfoMapper;
 import com.zyc.zdh.entity.*;
 import com.zyc.zdh.quartz.QuartzManager2;
 import com.zyc.zdh.service.EtlTaskService;
@@ -140,7 +141,7 @@ public class JdbcJob extends JobCommon {
         EtlTaskService etlTaskService = (EtlTaskService) SpringContext.getBean("etlTaskServiceImpl");
         DataSourcesServiceImpl dataSourcesServiceImpl = (DataSourcesServiceImpl) SpringContext.getBean("dataSourcesServiceImpl");
         ZdhLogsService zdhLogsService = (ZdhLogsService) SpringContext.getBean("zdhLogsServiceImpl");
-
+        ZdhHaInfoMapper zdhHaInfoMapper=(ZdhHaInfoMapper) SpringContext.getBean("zdhHaInfoMapper");
         //finish成功状态 判断next_time 是否超过结束日期,超过，删除任务,更新状态
         if (quartzJobInfo.getNext_time() != null && quartzJobInfo.getNext_time().after(quartzJobInfo.getEnd_time())) {
             logger.info("[JDBC] JOB ,下次时间超过结束时间,任务结束");
@@ -174,7 +175,7 @@ public class JdbcJob extends JobCommon {
         Boolean exe_status = runCommand(quartzJobInfo, zdhLogsService);
 
         String params = quartzJobInfo.getParams().trim();
-        String url = "http://127.0.0.1:60001/api/v1/zdh";
+        String url =getZdhUrl(zdhHaInfoMapper);
         if (!params.equals("")) {
             String value = JSON.parseObject(params).getString("url");
             if (value != null && !value.equals("")) {
@@ -251,7 +252,7 @@ public class JdbcJob extends JobCommon {
         EtlTaskService etlTaskService = (EtlTaskService) SpringContext.getBean("etlTaskServiceImpl");
         DataSourcesServiceImpl dataSourcesServiceImpl = (DataSourcesServiceImpl) SpringContext.getBean("dataSourcesServiceImpl");
         ZdhLogsService zdhLogsService = (ZdhLogsService) SpringContext.getBean("zdhLogsServiceImpl");
-
+        ZdhHaInfoMapper zdhHaInfoMapper=(ZdhHaInfoMapper) SpringContext.getBean("zdhHaInfoMapper");
         //判断次数
         quartzJobInfo.setCount(quartzJobInfo.getCount() + 1);
         isCount("JDBC", quartzManager2, quartzJobInfo);
@@ -265,7 +266,7 @@ public class JdbcJob extends JobCommon {
 
 
         String params = quartzJobInfo.getParams().trim();
-        String url = "http://127.0.0.1:60001/api/v1/zdh";
+        String url =getZdhUrl(zdhHaInfoMapper);
         if (!params.equals("")) {
             String value = JSON.parseObject(params).getString("url");
             if (value != null && !value.equals("")) {
@@ -352,7 +353,7 @@ public class JdbcJob extends JobCommon {
         EtlTaskService etlTaskService = (EtlTaskService) SpringContext.getBean("etlTaskServiceImpl");
         DataSourcesServiceImpl dataSourcesServiceImpl = (DataSourcesServiceImpl) SpringContext.getBean("dataSourcesServiceImpl");
         ZdhLogsService zdhLogsService = (ZdhLogsService) SpringContext.getBean("zdhLogsServiceImpl");
-
+        ZdhHaInfoMapper zdhHaInfoMapper=(ZdhHaInfoMapper) SpringContext.getBean("zdhHaInfoMapper");
 
         if (quartzJobInfo.getCount() == Long.parseLong(quartzJobInfo.getPlan_count().trim())) {
             System.out.println("===================================");
@@ -382,7 +383,7 @@ public class JdbcJob extends JobCommon {
         //拼接任务信息发送请求
 
         String params = quartzJobInfo.getParams().trim();
-        String url = "http://127.0.0.1:60001/api/v1/zdh";
+        String url =getZdhUrl(zdhHaInfoMapper);
         if (!params.equals("")) {
             String value = JSON.parseObject(params).getString("url");
             if (value != null && !value.equals("")) {

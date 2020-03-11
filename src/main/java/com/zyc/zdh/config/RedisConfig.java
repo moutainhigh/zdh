@@ -53,6 +53,8 @@ public class RedisConfig extends CachingConfigurerSupport {
 
 	private int port;
 
+	private String password;
+
 	private int timeOut;
 
 	private int maxIdle;// 最大空闲连接数, 默认8个
@@ -77,6 +79,14 @@ public class RedisConfig extends CachingConfigurerSupport {
 
 	public void setPort(int port) {
 		this.port = port;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public int getTimeOut() {
@@ -141,6 +151,7 @@ public class RedisConfig extends CachingConfigurerSupport {
 		redisConnectionFactory.setHostName(hostName);
 		redisConnectionFactory.setPort(port);
 		redisConnectionFactory.setTimeout(timeOut);
+		redisConnectionFactory.setPassword(password);
 		return redisConnectionFactory;
 	}
 
