@@ -135,7 +135,7 @@ public class ShellJob extends JobCommon {
             //delete 里面包含更新
             quartzManager2.deleteTask(quartzJobInfo, "finish");
             //插入日志
-            insertLog(quartzJobInfo.getJob_id(),"info","[JDBC] JOB ,结束调度任务",zdhLogsService);
+            insertLog(quartzJobInfo.getJob_id(),"info","[SHELL] JOB ,结束调度任务",zdhLogsService);
 
             return;
         }
@@ -177,7 +177,7 @@ public class ShellJob extends JobCommon {
                 logger.info("[SHELL] JOB ,开始发送ETL处理请求");
                 HttpUtil.postJSON(url, JSON.toJSONString(zdhInfo));
                 //插入日志
-                insertLog(zdhInfo.getQuartzJobInfo().getJob_id(),"debug","[调度平台]:" + JSON.toJSONString(zdhInfo),zdhLogsService);
+                insertLog(zdhInfo.getQuartzJobInfo().getJob_id(),"DEBUG","[调度平台]:" + JSON.toJSONString(zdhInfo),zdhLogsService);
 
             }
         } catch (Exception e) {
@@ -275,7 +275,7 @@ public class ShellJob extends JobCommon {
                 logger.info("[SHELL] JOB ,开始发送ETL处理请求");
                 HttpUtil.postJSON(url, JSON.toJSONString(zdhInfo));
                 //插入日志
-                insertLog(zdhInfo.getQuartzJobInfo().getJob_id(),"debug","[调度平台]:" + JSON.toJSONString(zdhInfo),zdhLogsService);
+                insertLog(zdhInfo.getQuartzJobInfo().getJob_id(),"DEBUG","[调度平台]:" + JSON.toJSONString(zdhInfo),zdhLogsService);
 
             }
         } catch (Exception e) {
@@ -311,7 +311,7 @@ public class ShellJob extends JobCommon {
             //delete 里面包含更新
             quartzManager2.deleteTask(quartzJobInfo, "finish");
             //插入日志
-            insertLog(quartzJobInfo.getJob_id(),"info","[JDBC] JOB ,结束调度任务",zdhLogsService);
+            insertLog(quartzJobInfo.getJob_id(),"info","[SHELL] JOB ,结束调度任务",zdhLogsService);
 
         } else {
             //如果执行失败 next_time 时间不变,last_time 不变
@@ -344,7 +344,7 @@ public class ShellJob extends JobCommon {
             //delete 里面包含更新
             quartzManager2.deleteTask(quartzJobInfo, "finish");
             //插入日志
-            insertLog(quartzJobInfo.getJob_id(),"info","[JDBC] JOB ,结束调度任务",zdhLogsService);
+            insertLog(quartzJobInfo.getJob_id(),"INFO","[SHELL] JOB ,结束调度任务",zdhLogsService);
             return;
         }
 
@@ -385,7 +385,7 @@ public class ShellJob extends JobCommon {
                 logger.info("[SHELL] JOB ,开始发送ETL处理请求");
                 HttpUtil.postJSON(url, JSON.toJSONString(zdhInfo));
                 //插入日志
-                insertLog(quartzJobInfo.getJob_id(),"debug","[调度平台]:" + JSON.toJSONString(zdhInfo),zdhLogsService);
+                insertLog(quartzJobInfo.getJob_id(),"DEBUG","[调度平台]:" + JSON.toJSONString(zdhInfo),zdhLogsService);
             }
         } catch (Exception e) {
             logger.error(e.getMessage());

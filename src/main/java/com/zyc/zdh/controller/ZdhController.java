@@ -536,15 +536,17 @@ public class ZdhController {
             zdhLogsService.deleteByTime(id, ts_start, ts_end);
         }
 
-        String levels="'debug','info','error'";
-        if(level !=null && level.toLowerCase().equals("info")){
-            levels="'info','error'";
-        }
-        if(level !=null && level.toLowerCase().equals("error")){
-            levels="'error'";
-        }
+        String levels="'DEBUG','WARN','INFO','ERROR'";
 
-
+        if(level !=null && level.equals("INFO")){
+            levels="'WARN','INFO','ERROR'";
+        }
+        if(level !=null && level.equals("WARN")){
+            levels="'WARN','ERROR'";
+        }
+        if(level !=null && level.equals("ERROR")){
+            levels="'ERROR'";
+        }
 
         List<ZdhLogs> zhdLogs = zdhLogsService.selectByTime(id, ts_start, ts_end,levels);
         Iterator<ZdhLogs> it = zhdLogs.iterator();
