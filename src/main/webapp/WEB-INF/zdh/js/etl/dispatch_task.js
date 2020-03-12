@@ -242,15 +242,15 @@
         function operateFormatter(value, row, index) {
             return [
                 ' <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">' +
-                ' <button id="execute" name="execute" type="button" class="btn btn-outline btn-sm">\n' +
+                ' <button id="execute" name="execute" type="button" class="btn btn-outline btn-sm" title="执行">\n' +
                 '                                        <i class="glyphicon glyphicon-play" aria-hidden="true"></i>\n' +
                 '                                    </button>',
-                ' <button id="edit" name="edit" type="button" class="btn btn-outline btn-sm"><i class="glyphicon glyphicon-edit" aria-hidden="true"></i>\n' +
+                ' <button id="edit" name="edit" type="button" class="btn btn-outline btn-sm" title="更新"><i class="glyphicon glyphicon-edit" aria-hidden="true"></i>\n' +
                 '                                    </button>',
-                ' <button id="del" name="del" type="button" class="btn btn-outline btn-sm">\n' +
+                ' <button id="del" name="del" type="button" class="btn btn-outline btn-sm" title="删除">\n' +
                 '                                        <i class="glyphicon glyphicon-trash" aria-hidden="true"></i>\n' +
                 '                                    </button>',
-                ' <button id="log_txt" name="log_txt" type="button" class="btn btn-outline btn-sm">\n' +
+                ' <button id="log_txt" name="log_txt" type="button" class="btn btn-outline btn-sm" title="日志">\n' +
                 '                                        <i class="glyphicon glyphicon-file" aria-hidden="true"></i>\n' +
                 '                                    </button>'
                 +

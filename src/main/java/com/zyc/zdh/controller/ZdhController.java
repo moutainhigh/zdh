@@ -158,6 +158,7 @@ public class ZdhController {
     public String etl_task_add(EtlTaskInfo etlTaskInfo) {
         etlTaskInfo.setOwner(getUser().getId());
         debugInfo(etlTaskInfo);
+        etlTaskInfo.setId(null);
 
         etlTaskInfo.getColumn_data_list().forEach(column_data -> {
             System.out.println(column_data.getColumn_expr() + "=" + column_data.getColumn_alias());

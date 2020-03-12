@@ -63,10 +63,7 @@
 
       window.operateEvents = {
           'click #edit': function (e, value, row, index) {
-
               $("#id").val(row.id)
-
-
               top.layer.open({
                   type: 2,
                   title: 'ETL任务配置',
@@ -86,6 +83,27 @@
               });
 
           },
+          'click #copy': function (e, value, row, index) {
+              $("#id").val(row.id)
+              top.layer.open({
+                  type: 2,
+                  title: 'ETL任务配置',
+                  shadeClose: false,
+                  resize: true,
+                  fixed: false,
+                  maxmin: true,
+                  shade: 0.1,
+                  area : ['45%', '60%'],
+                  //area: ['450px', '500px'],
+                  content: "etl_task_add_index?id="+row.id+"&is_copy=true", //iframe的url
+                  end:function () {
+                      $('#exampleTableEvents').bootstrapTable('refresh', {
+                          url : 'etl_task_list'
+                      });
+                  }
+              });
+
+          },
           'click #del': function (e, value, row, index) {
               var ids = new Array();// 声明一个数组
               ids.push(row.id)
@@ -96,9 +114,11 @@
       function operateFormatter(value, row, index) {
           return [
               ' <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">' +
-              ' <button id="edit" name="edit" type="button" class="btn btn-outline btn-sm"><i class="glyphicon glyphicon-edit" aria-hidden="true"></i>\n' +
+              ' <button id="edit" name="edit" type="button" class="btn btn-outline btn-sm" title="更新"><i class="glyphicon glyphicon-edit" aria-hidden="true"></i>\n' +
               '                                    </button>',
-              ' <button id="del" name="del" type="button" class="btn btn-outline btn-sm">\n' +
+              ' <button id="copy" name="copy" type="button" class="btn btn-outline btn-sm" title="复制"><i class="glyphicon glyphicon-copyright-mark" aria-hidden="true"></i>\n' +
+              '                                    </button>',
+              ' <button id="del" name="del" type="button" class="btn btn-outline btn-sm" title="删除">\n' +
               '                                        <i class="glyphicon glyphicon-trash" aria-hidden="true"></i>\n' +
               '                                    </button>'
                +
