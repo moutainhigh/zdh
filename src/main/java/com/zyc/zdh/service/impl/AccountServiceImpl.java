@@ -49,4 +49,9 @@ public class AccountServiceImpl implements AccountService {
 		return accountDao.insert(user);
 	}
 
+	@Override
+	public int updateUser(User user) {
+		return accountDao.update(user);
+	}
+
 }

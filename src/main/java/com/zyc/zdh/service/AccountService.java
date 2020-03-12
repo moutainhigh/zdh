@@ -19,4 +19,6 @@ public interface AccountService {
 	public List<User> findByUserName(User user);
 
 	public int insert(User user);
+
+	public int updateUser(User user);
 }

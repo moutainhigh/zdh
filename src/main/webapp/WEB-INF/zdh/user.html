@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title>H+ 后台主题UI框架 - 表单验证 jQuery Validation</title>
+    <meta name="keywords" content="H+后台主题,后台bootstrap框架,会员中心主题,后台HTML,响应式后台">
+    <meta name="description" content="H+是一个完全响应式，基于Bootstrap3最新版本开发的扁平化主题，她采用了主流的左右两栏式布局，使用了Html5+CSS3等现代技术">
+
+    <link rel="shortcut icon" href="favicon.ico"> <link href="css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="css/font-awesome.css?v=4.4.0" rel="stylesheet">
+    <link href="css/animate.css" rel="stylesheet">
+    <link href="css/style.css?v=4.1.0" rel="stylesheet">
+
+</head>
+
+<body class="gray-bg">
+    <div class="wrapper wrapper-content animated fadeInRight">
+
+        <div class="row">
+
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>用户中心</h5>
+                        <div class="ibox-tools">
+                            <a class="collapse-link">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                            <a class="close-link">
+                                <i class="fa fa-times"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+                        <form class="form-horizontal m-t" id="user">
+
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">用户名：</label>
+                                <div class="col-sm-8">
+                                    <input id="userName" name="userName" class="form-control" type="text" aria-required="true" aria-invalid="true" class="error">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">密码：</label>
+                                <div class="col-sm-8">
+                                    <input id="password" name="password" class="form-control" type="password">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">确认密码：</label>
+                                <div class="col-sm-8">
+                                    <input id="password2" name="password2" class="form-control" type="password">
+                                    <span class="help-block m-b-none"><i class="fa fa-info-circle"></i> 请再次输入您的密码</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">E-mail：</label>
+                                <div class="col-sm-8">
+                                    <input id="email" name="email" class="form-control" type="email">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-8 col-sm-offset-3">
+                                    <button class="btn btn-primary" type="button" id="btn_up" οnsubmit='return false'>更新</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- 全局js -->
+    <script src="js/jquery.min.js?v=2.1.4"></script>
+    <script src="js/bootstrap.min.js?v=3.3.6"></script>
+
+    <!-- 自定义js -->
+    <script src="js/content.js?v=1.0.0"></script>
+
+    <!-- jQuery Validation plugin javascript-->
+    <script src="js/plugins/validate/jquery.validate.min.js"></script>
+    <script src="js/plugins/validate/messages_zh.min.js"></script>
+
+    <script src="js/demo/form-validate-demo.js"></script>
+
+    <!-- layer javascript -->
+    <script src="js/plugins/layer/layer.min.js"></script>
+
+    <script>
+
+        (function(document, window, $) {
+
+            $.ajax({
+                type: 'POST',
+                url: "getUserInfo",
+                async:false,
+                dataType: 'json',
+                data: '',
+                //成功返回
+                success: function (data) {
+                    if(data.userName !='' ){
+                        $('#userName').val(data.userName)
+                        $('#email').val(data.email)
+                        $('#password').val("")
+                    }
+                },
+                //处理完成
+                complete: function () {
+                    console.info("complete getUserInfo")
+                },
+                //报错
+                error: function (data) {
+                    console.info("error: " + data.responseText);
+                }
+            });
+
+
+            $('#btn_up').click(function () {
+
+                if($('#password').val() != $('#password2').val()){
+                    layer.msg("2次密码不一致,请检查密码")
+                    return ;
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: "user",
+                    dataType: 'json',
+                    data: $("#user").serialize(),
+                    //发送数据前
+                    beforeSend: function () {
+                        // 禁用按钮防止重复提交
+                        $("#btn_up").attr({disabled: "disabled"});
+                    },
+                    //成功返回
+                    success: function (data) {
+                        $("#btn_up").removeAttr('disabled');
+                        layer.msg("更新成功")
+                    },
+                    //处理完成
+                    complete: function () {
+                        $("#btn_up").removeAttr('disabled');
+                        console.info("complete")
+                    },
+                    //报错
+                    error: function (data) {
+                        $("#btn_up").removeAttr('disabled');
+                        layer.msg(data.responseText);
+                        console.info("error: " + data.responseText);
+                    }
+                });
+
+
+            })
+
+        })(document, window, jQuery);
+
+
+    </script>
+
+</body>
+
+
+
+</html>

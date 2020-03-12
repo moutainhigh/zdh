@@ -42,4 +42,7 @@ public interface AccountDao {
 	@Insert({ "insert into account_info(user_name, user_password,email) values(#{userName}, #{password},#{email})" })
 	public int insert(User user);
 
+	@Update({"update account_info set user_name=#{userName},user_password=#{password},email=#{email} where id =#{id}"})
+	public int update(User user);
+
 }

@@ -11,6 +11,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.zyc.zdh.entity.User;
 import com.zyc.zdh.service.AccountService;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +91,36 @@ public class LoginController {
     }
 
 
+    @RequestMapping(value = "user", method = RequestMethod.GET)
+    public String updateUser(String password){
+
+        return "user";
+    }
+
+    @RequestMapping(value = "user", method = RequestMethod.POST)
+    @ResponseBody
+    public String updateUser2(User user){
+        User user_old = (User) SecurityUtils.getSubject().getPrincipal();
+        if(user.getPassword().equals("")){
+            user.setPassword(user_old.getPassword());
+        }
+        user.setId(user_old.getId());
+
+        accountService.updateUser(user);
+
+        Subject subject = SecurityUtils.getSubject();
+        PrincipalCollection principalCollection = subject.getPrincipals();
+        String realmName = principalCollection.getRealmNames().iterator().next();
+        PrincipalCollection newPrincipalCollection =
+                new SimplePrincipalCollection(user, realmName);
+        subject.runAs(newPrincipalCollection);
+
+        JSONObject json = new JSONObject();
+        json.put("status","200");
+        return json.toJSONString();
+    }
+
+
     @RequestMapping("getUserInfo")
     @ResponseBody
     public String getUserInfo(){
@@ -96,7 +128,10 @@ public class LoginController {
         User user = (User) SecurityUtils.getSubject().getPrincipal();
 
         JSONObject json = new JSONObject();
+        json.put("id",user.getId());
         json.put("userName",user.getUserName());
+        //json.put("password",user.getUserName());
+        json.put("email",user.getEmail());
 
         return json.toJSONString();
     }
