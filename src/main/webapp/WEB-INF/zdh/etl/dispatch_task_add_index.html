@@ -47,7 +47,7 @@
                             <label class="col-sm-2 control-label">调度说明</label>
                             <div class="col-sm-10">
                                 <input id="job_context" name="job_context" type="text"
-                                       placeholder="调度说明" class="form-control" aria-required="true"> </span>
+                                       placeholder="调度说明,选择ETL任务自动填充" class="form-control" aria-required="true"> </span>
                             </div>
                         </div>
 
@@ -190,7 +190,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label">数据处理状态</label>
                             <div class="col-sm-10">
-                                <select id="last_status" name="last_status" data-placeholder="选择状态..."
+                                <select id="last_status" name="last_status" data-placeholder="默认不选择"
                                         class="chosen-select form-control m-b" tabindex="2">
                                     <option value="" mytype=""></option>
                                     <option value="finish" mytype="">finish</option>
@@ -313,7 +313,9 @@
                             str += '<option value=\"' + data[i].id + "\" mytype=\"" + data[i].etl_context + "\" hassubinfo=\"true\">" + data[i].etl_context + "</option>"
                         }
                         $('#etl_task_id').html(str);
-                        $('#etl_task_id').chosen();
+                        $('#etl_task_id').chosen().on("change", function (evt, params) {
+                                $('#job_context').val($('#etl_task_id').find("option:selected").attr("mytype"))
+                        })
 
                     },
                     //处理完成
